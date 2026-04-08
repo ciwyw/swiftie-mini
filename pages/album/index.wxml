@@ -1,5 +1,15 @@
 <view class="container">
-  <empty-state wx:if="{{hasError}}" title="专辑不存在" desc="请返回资料馆重新选择。"></empty-state>
+  <view wx:if="{{loadError}}" class="card">
+    <empty-state title="内容加载失败" desc="请稍后重试。"></empty-state>
+    <button bindtap="retryLoad">重新加载</button>
+  </view>
+
+  <view wx:elif="{{isLoading}}" class="card">
+    <text class="block-title">加载中</text>
+    <text class="album-list-subtitle">正在获取专辑内容。</text>
+  </view>
+
+  <empty-state wx:elif="{{hasError}}" title="专辑不存在" desc="请返回资料馆重新选择。"></empty-state>
 
   <view wx:elif="{{album}}">
     <view class="card album-head">
@@ -12,6 +22,7 @@
 
     <view class="card">
       <text class="block-title">歌曲列表</text>
+      <empty-state wx:if="{{!songs.length}}" title="暂无歌曲" desc="录入后会显示在这里。"></empty-state>
       <view wx:for="{{songs}}" wx:key="id" class="song-row" data-id="{{item.id}}" bindtap="goSong">
         <view class="song-copy">
           <text class="song-name">{{item.name}}</text>
@@ -29,6 +40,7 @@
     </view>
 
     <view class="card">
+      <empty-state wx:if="{{!albums.length}}" title="暂无专辑" desc="录入后会显示在这里。"></empty-state>
       <view wx:for="{{albums}}" wx:key="id" class="album-row" data-id="{{item.id}}" bindtap="goAlbum">
         <image class="album-cover album-cover--list" src="{{item.cover}}" mode="aspectFill"></image>
         <view class="album-copy">

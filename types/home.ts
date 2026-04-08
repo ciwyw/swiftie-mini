@@ -19,8 +19,8 @@ export interface HomeSpotlight {
   entityId: string;
   name: string;
   cover: string;
-  startDate: string;
-  endDate: string;
+  startAt: number;
+  endAt: number;
   action: HomeAction;
 }
 

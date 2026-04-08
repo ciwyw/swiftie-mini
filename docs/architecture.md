@@ -6,7 +6,7 @@
 - TypeScript
 - WXML
 - WXSS
-- 本地 mock 数据驱动
+- Cloudflare Workers + D1 内容接口
 - 本地持久化：`wx.setStorageSync` / `wx.getStorageSync`
 
 补充工具链：
@@ -14,6 +14,7 @@
 - `tsx`：运行 Node 侧 TypeScript 测试
 - `typescript`：类型检查
 - `@types/node`：测试与脚本环境类型
+- `wrangler`：Cloudflare Workers / D1 本地开发与迁移
 
 ## 应用入口
 
@@ -53,6 +54,8 @@
 ## 目录职责
 
 - `pages/`：页面生命周期、交互和视图状态
+- `services/`：远程请求、接口封装和内容缓存层
+- `server/`：Cloudflare Workers 服务端与 D1 schema
 - `data/`：本地 mock 业务数据
 - `types/`：领域类型定义
 - `utils/selectors.ts`：跨模块通用读取与派生逻辑
@@ -66,21 +69,21 @@
 
 ### 首页与资料馆
 
-- [pages/home/index.ts](/Users/bytedance/projects/swiftie-mini/pages/home/index.ts)：首页 Hero、Era 卡片与最近动态摘要聚合
+- [pages/home/index.ts](/Users/bytedance/projects/swiftie-mini/pages/home/index.ts)：首页远程加载 `GET /home`
 - [pages/library/index.ts](/Users/bytedance/projects/swiftie-mini/pages/library/index.ts)：资料馆入口聚合页
-- [pages/album/index.ts](/Users/bytedance/projects/swiftie-mini/pages/album/index.ts)：专辑列表/详情双态
-- [pages/song/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song/index.ts)：歌曲详情、收藏、歌词、视频 mock 入口
+- [pages/album/index.ts](/Users/bytedance/projects/swiftie-mini/pages/album/index.ts)：专辑列表/详情双态，远程加载专辑与歌曲
+- [pages/song/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song/index.ts)：歌曲详情、收藏、本地歌词展示与远程视频关联内容
 
 ### Era 展厅
 
-- [pages/era/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/era/detail/index.ts)：Era 展厅详情页控制器，负责 `id` 路由加载、空态和可点击模态复用
-- [utils/eraSelectors.ts](/Users/bytedance/projects/swiftie-mini/utils/eraSelectors.ts)：Era 展厅详情聚合入口，组合 `data/eraExhibits.ts` 与现有 album/song/performance 数据
+- [pages/era/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/era/detail/index.ts)：Era 展厅详情页控制器，负责远程加载、空态、失败态和可点击模态复用
+- [services/contentStore.ts](/Users/bytedance/projects/swiftie-mini/services/contentStore.ts)：Era 详情页组合 `era + album + performances`
 
 ### 巡演
 
-- [pages/tour/index.ts](/Users/bytedance/projects/swiftie-mini/pages/tour/index.ts)：巡演首页聚合
+- [pages/tour/index.ts](/Users/bytedance/projects/swiftie-mini/pages/tour/index.ts)：巡演首页远程聚合
 - [pages/tour/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/tour/detail/index.ts)：巡演状态、进度条、场次列表
-- [pages/show/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/show/detail/index.ts)：场次详情聚合页
+- [pages/show/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/show/detail/index.ts)：场次详情、票务信息和视频列表
 - [pages/guide/index.ts](/Users/bytedance/projects/swiftie-mini/pages/guide/index.ts)：Checklist 交互
 - [pages/video/upload/index.ts](/Users/bytedance/projects/swiftie-mini/pages/video/upload/index.ts)：mock 上传流程
 
@@ -90,7 +93,7 @@
 
 ## 实现边界
 
-- 页面层优先消费 selector，而不是在页面内部直接拼装复杂业务数据
-- Era 卡片承接到独立的 `pages/era/detail/index`，其页面数据由 `utils/eraSelectors.ts` 聚合
-- 当前产品为前端自洽 MVP，页面能力以浏览、跳转、mock 交互为主
-- 若后续引入真实后端或媒体播放能力，需要先更新本文档与 `docs/api.md`
+- 页面层优先消费 `services/contentStore.ts` 和纯 selector，而不是在页面内部直接拼装复杂业务数据
+- `pages/library/index.ts` 仍保持静态入口，不发请求
+- 公开内容页面现在默认走远程 API；请求失败显示统一失败态，不再回退到运行时 mock
+- 收藏、用户资料缓存、抢票助手 Checklist 仍然保留本地存储

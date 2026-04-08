@@ -6,11 +6,17 @@
     "test:era": "tsx --test tests/era-module.test.ts",
     "test:tour": "tsx --test tests/tour-module.test.ts",
     "test:library": "tsx --test tests/library-module.test.ts",
+    "test:server": "tsx --test server/tests/index.test.ts",
+    "server:dev": "wrangler dev --config server/wrangler.jsonc",
+    "server:deploy": "wrangler deploy --config server/wrangler.jsonc",
+    "server:d1:migrate:local": "wrangler d1 migrations apply swiftie-mini --local --config server/wrangler.jsonc",
+    "server:d1:migrate:remote": "wrangler d1 migrations apply swiftie-mini --remote --config server/wrangler.jsonc",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "^4.81.0"
   }
 }

@@ -1,6 +1,6 @@
 import { HomeAction, HomeEraCard, HomeSpotlight, HomeSpotlightType } from '../../types/home';
 import { NewsItem } from '../../types/news';
-import { getHomeFeed } from '../../utils/homeSelectors';
+import { loadHomeFeed } from '../../services/contentStore';
 
 interface HomeSpotlightDisplay {
   id: string;
@@ -16,7 +16,9 @@ interface HomeSpotlightDisplay {
 interface HomeData {
   spotlights: HomeSpotlightDisplay[];
   eras: HomeEraCard[];
-  news: NewsItem[];
+  news: Array<NewsItem & { dateText: string }>;
+  isLoading: boolean;
+  loadError: boolean;
 }
 
 interface HomeActionDataset {
@@ -80,25 +82,52 @@ function assertNever(value: never): never {
   throw new Error(`Unhandled home spotlight type: ${value}`);
 }
 
+function formatDay(timestamp: number): string {
+  const value = new Date(timestamp);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 Page({
   data: {
     spotlights: [],
     eras: [],
-    news: []
+    news: [],
+    isLoading: false,
+    loadError: false
   } as HomeData,
 
   onShow() {
-    this.refreshFeed();
+    return this.refreshFeed();
   },
 
-  refreshFeed() {
-    const { spotlights, eras, news } = getHomeFeed();
+  async refreshFeed() {
+    this.setData({ isLoading: true, loadError: false });
 
-    this.setData({
-      spotlights: spotlights.map(getHomeSpotlightDisplay),
-      eras,
-      news
-    });
+    try {
+      const { spotlights, eras, news } = await loadHomeFeed();
+
+      this.setData({
+        spotlights: spotlights.map(getHomeSpotlightDisplay),
+        eras,
+        news: news.map((item) => ({
+          ...item,
+          dateText: formatDay(item.publishedAt)
+        })),
+        isLoading: false,
+        loadError: false
+      });
+    } catch {
+      this.setData({
+        spotlights: [],
+        eras: [],
+        news: [],
+        isLoading: false,
+        loadError: true
+      });
+    }
   },
 
   goAction(event: { currentTarget: { dataset: HomeActionDataset } }) {

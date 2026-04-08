@@ -1,15 +1,19 @@
 import { EraExhibitDetail } from '../../../types/era';
-import { getEraExhibitDetailById } from '../../../utils/eraSelectors';
+import { loadEraDetailPage } from '../../../services/contentStore';
 
 interface EraDetailData {
   exhibit: EraExhibitDetail | null;
+  currentExhibitId: string;
   hasError: boolean;
+  isLoading: boolean;
+  loadError: boolean;
   isHonorSheetOpen: boolean;
 }
 
 interface EraDetailPageInstance {
   data: EraDetailData;
   setData: (patch: Partial<EraDetailData>) => void;
+  onLoad: (options: { id?: string }) => void | Promise<void>;
 }
 
 interface RouteDataset {
@@ -53,36 +57,63 @@ function showInfoModal(title: string, lines: Array<string | undefined>) {
 const eraDetailPageConfig = {
   data: {
     exhibit: null,
+    currentExhibitId: '',
     hasError: false,
+    isLoading: false,
+    loadError: false,
     isHonorSheetOpen: false
   } as EraDetailData,
 
-  onLoad(this: EraDetailPageInstance, options: { id?: string }) {
+  async onLoad(this: EraDetailPageInstance, options: { id?: string }) {
     const exhibitId = options.id;
+    this.setData({
+      currentExhibitId: exhibitId ?? '',
+      isLoading: true,
+      loadError: false,
+      hasError: false
+    });
+
     if (!exhibitId) {
       this.setData({
         exhibit: null,
+        currentExhibitId: '',
         hasError: true,
+        isLoading: false,
+        loadError: false,
         isHonorSheetOpen: false
       });
       return;
     }
 
-    const exhibit = getEraExhibitDetailById(exhibitId);
-    if (!exhibit) {
+    try {
+      const exhibit = await loadEraDetailPage(exhibitId);
+      if (!exhibit) {
+        this.setData({
+          exhibit: null,
+          hasError: true,
+          isLoading: false,
+          loadError: false,
+          isHonorSheetOpen: false
+        });
+        return;
+      }
+
+      this.setData({
+        exhibit,
+        hasError: false,
+        isLoading: false,
+        loadError: false,
+        isHonorSheetOpen: false
+      });
+    } catch {
       this.setData({
         exhibit: null,
-        hasError: true,
+        hasError: false,
+        isLoading: false,
+        loadError: true,
         isHonorSheetOpen: false
       });
-      return;
     }
-
-    this.setData({
-      exhibit,
-      hasError: false,
-      isHonorSheetOpen: false
-    });
   },
 
   goRoute(this: EraDetailPageInstance, event: { currentTarget: { dataset: RouteDataset } }) {
@@ -118,6 +149,10 @@ const eraDetailPageConfig = {
       summary,
       '暂未接入完整内容页，这里先作为可点击入口。'
     ]);
+  },
+
+  retryLoad(this: EraDetailPageInstance) {
+    return this.onLoad({ id: this.data.currentExhibitId });
   }
 };
 

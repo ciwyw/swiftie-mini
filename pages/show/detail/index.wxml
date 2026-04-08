@@ -1,5 +1,15 @@
 <view class="container show-page">
-  <empty-state wx:if="{{hasError}}" title="场次不存在" desc="请返回巡演详情重新选择场次。"></empty-state>
+  <view wx:if="{{loadError}}" class="card">
+    <empty-state title="内容加载失败" desc="请稍后重试。"></empty-state>
+    <button bindtap="retryLoad">重新加载</button>
+  </view>
+
+  <view wx:elif="{{isLoading}}" class="card">
+    <text class="section-title">加载中</text>
+    <text class="info-value">正在获取场次详情。</text>
+  </view>
+
+  <empty-state wx:elif="{{hasError}}" title="场次不存在" desc="请返回巡演详情重新选择场次。"></empty-state>
 
   <view wx:elif="{{show}}">
     <view class="card">
@@ -7,7 +17,7 @@
       <view class="info-list">
         <view class="info-row">
           <text class="info-label">日期</text>
-          <text class="info-value">{{show.date}}</text>
+          <text class="info-value">{{show.dateText}}</text>
         </view>
         <view class="info-row">
           <text class="info-label">场地</text>
@@ -46,25 +56,25 @@
       <view class="info-list">
         <view class="info-row">
           <text class="info-label">购票平台</text>
-          <text class="info-value">{{ticketPlatformText}}</text>
+          <text class="info-value">{{show.ticketPlatform || '待公布'}}</text>
         </view>
         <view class="info-row">
           <text class="info-label">开售时间</text>
-          <text class="info-value">{{saleTimeText}}</text>
+          <text class="info-value">{{show.saleAtText}}</text>
         </view>
       </view>
     </view>
 
-    <view class="card" wx:if="{{guide}}">
+    <view class="card" wx:if="{{show.address || show.entryTime || (show.seatMapImages && show.seatMapImages.length) || (show.notes && show.notes.length)}}">
       <text class="section-title">场馆信息</text>
       <view class="info-list">
-        <view class="info-row">
+        <view wx:if="{{show.address}}" class="info-row">
           <text class="info-label">地址</text>
-          <text class="info-value">{{guide.address}}</text>
+          <text class="info-value">{{show.address}}</text>
         </view>
-        <view wx:if="{{guide.entryTime}}" class="info-row">
+        <view wx:if="{{show.entryTime}}" class="info-row">
           <text class="info-label">入场时间</text>
-          <text class="info-value">{{guide.entryTime}}</text>
+          <text class="info-value">{{show.entryTime}}</text>
         </view>
       </view>
       <view wx:if="{{currentSeatMapImage}}" class="seat-map-section">
@@ -85,8 +95,8 @@
           </view>
         </view>
       </view>
-      <view wx:if="{{guide.notes && guide.notes.length}}" class="notes-list">
-        <text wx:for="{{guide.notes}}" wx:key="*this" class="note-item">- {{item}}</text>
+      <view wx:if="{{show.notes && show.notes.length}}" class="notes-list">
+        <text wx:for="{{show.notes}}" wx:key="*this" class="note-item">- {{item}}</text>
       </view>
     </view>
 
@@ -112,7 +122,7 @@
         <view class="video-copy">
           <text class="video-title">{{item.title}}</text>
           <text class="video-song" wx:if="{{item.song}}">{{item.song}}</text>
-          <text class="video-meta">{{item.userName}} · {{item.uploadTime}}</text>
+          <text class="video-meta">{{item.userName}} · {{item.uploadedAtText}}</text>
         </view>
       </view>
     </view>

@@ -1,7 +1,7 @@
+import { loadAlbumDetailPage, loadAlbumList } from '../../services/contentStore';
 import { Album } from '../../types/album';
 import { Song } from '../../types/song';
 import { ROUTES } from '../../utils/constants';
-import { getAlbumById, getAlbums, getSongsByAlbumId } from '../../utils/selectors';
 
 interface AlbumSongItem extends Song {
   hasMv: boolean;
@@ -11,7 +11,10 @@ interface AlbumData {
   albums: Album[];
   album: Album | null;
   songs: AlbumSongItem[];
+  currentAlbumId: string;
   hasError: boolean;
+  isLoading: boolean;
+  loadError: boolean;
 }
 
 function goToDetail(route: string, id: string) {
@@ -41,41 +44,86 @@ Page({
     albums: [],
     album: null,
     songs: [],
-    hasError: false
+    currentAlbumId: '',
+    hasError: false,
+    isLoading: false,
+    loadError: false
   } as AlbumData,
 
   onLoad(options: { id?: string }) {
-    const albumId = options.id;
+    return this.loadPage(options.id ?? '');
+  },
+
+  async loadPage(albumId: string) {
+    this.setData({
+      currentAlbumId: albumId,
+      hasError: false,
+      isLoading: true,
+      loadError: false
+    });
+
     if (!albumId) {
-      this.setData({
-        albums: getAlbums(),
-        album: null,
-        songs: [],
-        hasError: false
-      });
+      try {
+        this.setData({
+          albums: await loadAlbumList(),
+          album: null,
+          songs: [],
+          hasError: false,
+          isLoading: false,
+          loadError: false
+        });
+      } catch {
+        this.setData({
+          albums: [],
+          album: null,
+          songs: [],
+          hasError: false,
+          isLoading: false,
+          loadError: true
+        });
+      }
       return;
     }
 
-    const album = getAlbumById(albumId);
-    if (!album) {
+    try {
+      const { album, songs } = await loadAlbumDetailPage(albumId);
+      if (!album) {
+        this.setData({
+          albums: [],
+          album: null,
+          songs: [],
+          hasError: true,
+          isLoading: false,
+          loadError: false
+        });
+        return;
+      }
+
+      this.setData({
+        albums: [],
+        album,
+        songs: songs.map((song) => ({
+          ...song,
+          hasMv: Boolean(song.mv)
+        })),
+        hasError: false,
+        isLoading: false,
+        loadError: false
+      });
+    } catch {
       this.setData({
         albums: [],
         album: null,
         songs: [],
-        hasError: true
+        hasError: false,
+        isLoading: false,
+        loadError: true
       });
-      return;
     }
+  },
 
-    this.setData({
-      albums: [],
-      album,
-      songs: getSongsByAlbumId(albumId).map((song) => ({
-        ...song,
-        hasMv: Boolean(song.mv)
-      })),
-      hasError: false
-    });
+  retryLoad() {
+    return this.loadPage(this.data.currentAlbumId);
   },
 
   goSong(event: { currentTarget: { dataset: { id: string } } }) {

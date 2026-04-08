@@ -7,7 +7,6 @@ export interface EraRouteAction {
 }
 
 export interface EraHero {
-  yearLabel: string;
   intro: string;
   cover: string;
   themeColor: string;
@@ -21,7 +20,6 @@ export interface EraSignatureLook {
 
 export interface EraMilestone {
   id: string;
-  dateLabel: string;
   title: string;
   summary: string;
   type: 'release' | 'performance' | 'award' | 'moment';

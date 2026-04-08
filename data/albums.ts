@@ -1,5 +1,9 @@
 import { Album } from '../types/album';
 
+function localDayTimestamp(year: number, month: number, day: number): number {
+  return new Date(year, month - 1, day).getTime();
+}
+
 export const albums: Album[] = [
   {
     id: 'album_taylor_swift',
@@ -42,7 +46,7 @@ export const albums: Album[] = [
     name: 'Midnights',
     year: 2022,
     cover: '/assets/images/albums/album-midnights.png',
-    announcementDate: '2026-04-01',
-    releaseDate: '2026-04-30'
+    announcementAt: localDayTimestamp(2026, 4, 1),
+    releaseAt: localDayTimestamp(2026, 4, 30)
   }
 ];

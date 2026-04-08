@@ -1,8 +1,10 @@
+import { loadPerformances } from '../../services/contentStore';
 import { Performance } from '../../types/library';
-import { getPerformanceList } from '../../utils/librarySelectors';
 
 interface PerformanceData {
   performances: Performance[];
+  isLoading: boolean;
+  loadError: boolean;
 }
 
 interface PerformanceCardDataset {
@@ -27,13 +29,36 @@ function showInfoModal(title: string, lines: Array<string | undefined>) {
 
 Page({
   data: {
-    performances: []
+    performances: [],
+    isLoading: false,
+    loadError: false
   } as PerformanceData,
 
   onLoad() {
-    this.setData({
-      performances: getPerformanceList()
-    });
+    return this.loadPage();
+  },
+
+  async loadPage() {
+    this.setData({ isLoading: true, loadError: false });
+
+    try {
+      const performances = await loadPerformances();
+      this.setData({
+        performances: performances.filter((item) => item.kind === 'live' && item.domain === 'library'),
+        isLoading: false,
+        loadError: false
+      });
+    } catch {
+      this.setData({
+        performances: [],
+        isLoading: false,
+        loadError: true
+      });
+    }
+  },
+
+  retryLoad() {
+    return this.loadPage();
   },
 
   openPerformance(event: { currentTarget: { dataset: PerformanceCardDataset } }) {

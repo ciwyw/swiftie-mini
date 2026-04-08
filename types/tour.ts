@@ -14,10 +14,9 @@ export interface Tour {
   status: TourStatus;
   cover: string;
   description: string;
-  announcementDate?: string;
-  startDate: string;
-  endDate: string;
-  rangeLabel: string;
+  announcementAt?: number;
+  startAt: number;
+  endAt: number;
   setlists: TourSetlistVersion[];
 }
 
@@ -27,8 +26,14 @@ export interface Show {
   country: string;
   city: string;
   venue: string;
-  date: string;
+  startAt: number;
   status: ShowStatus;
+  ticketPlatform?: string;
+  saleAt?: number;
+  entryTime?: string;
+  address?: string;
+  seatMapImages?: string[];
+  notes?: string[];
   surpriseGuests?: ShowGuest[];
   surpriseSongs?: SurpriseSong[];
 }
@@ -40,7 +45,7 @@ export interface Video {
   cover: string;
   song?: string;
   userName: string;
-  uploadTime: string;
+  uploadedAt: number;
 }
 
 export interface SurpriseSong {
@@ -50,16 +55,6 @@ export interface SurpriseSong {
 
 export interface ShowGuest {
   name: string;
-}
-
-export interface ShowGuide {
-  showId: string;
-  ticketPlatform?: string;
-  saleTime?: string;
-  entryTime?: string;
-  address: string;
-  seatMapImages: string[];
-  notes?: string[];
 }
 
 export interface TourHomeStatus {

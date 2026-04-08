@@ -1,67 +1,85 @@
 <view class="container">
-  <view wx:if="{{spotlights.length}}" class="spotlight-list">
-    <view
-      wx:for="{{spotlights}}"
-      wx:key="id"
-      class="spotlight-card card"
-      data-type="{{item.action.type}}"
-      data-route="{{item.action.route}}"
-      data-query="{{item.action.query}}"
-      bindtap="goAction"
-    >
-      <view class="spotlight-copy">
-        <text class="spotlight-eyebrow">{{item.eyebrow}}</text>
-        <text class="spotlight-title">{{item.title}}</text>
-        <text class="spotlight-summary">{{item.summary}}</text>
-        <text class="spotlight-cta">{{item.ctaText}}</text>
-      </view>
-      <image class="spotlight-cover" src="{{item.cover}}" mode="aspectFill"></image>
-    </view>
+  <view wx:if="{{loadError}}" class="card page-head">
+    <empty-state title="内容加载失败" desc="请稍后重试。"></empty-state>
+    <button bindtap="refreshFeed">重新加载</button>
   </view>
 
-  <view class="section-head">
-    <text class="section-title">Era 博物馆</text>
-    <text class="section-subtitle">从首专到 Midnights，按时代顺序浏览每个 Era 卡片。</text>
+  <view wx:elif="{{isLoading}}" class="card page-head">
+    <text class="section-title">加载中</text>
+    <text class="section-subtitle">正在获取首页内容。</text>
   </view>
 
-  <scroll-view class="era-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
-    <view class="era-row">
+  <block wx:else>
+    <view wx:if="{{spotlights.length}}" class="spotlight-list">
       <view
-        wx:for="{{eras}}"
+        wx:for="{{spotlights}}"
         wx:key="id"
-        class="era-card"
+        class="spotlight-card card"
         data-type="{{item.action.type}}"
         data-route="{{item.action.route}}"
         data-query="{{item.action.query}}"
         bindtap="goAction"
       >
-        <view class="era-accent" style="background: {{item.themeColor}};"></view>
-        <image class="era-cover" src="{{item.cover}}" mode="aspectFill"></image>
-        <text class="era-name">{{item.name}}</text>
-        <text class="era-tagline">{{item.tagline}}</text>
+        <view class="spotlight-copy">
+          <text class="spotlight-eyebrow">{{item.eyebrow}}</text>
+          <text class="spotlight-title">{{item.title}}</text>
+          <text class="spotlight-summary">{{item.summary}}</text>
+          <text class="spotlight-cta">{{item.ctaText}}</text>
+        </view>
+        <image class="spotlight-cover" src="{{item.cover}}" mode="aspectFill"></image>
       </view>
     </view>
-  </scroll-view>
 
-  <info-card title="最近动态">
-    <view
-      wx:for="{{news}}"
-      wx:key="id"
-      class="news-item"
-      data-type="{{item.action.type}}"
-      data-route="{{item.action.route}}"
-      data-query="{{item.action.query}}"
-      bindtap="goAction"
-    >
-      <view class="news-top">
-        <text class="news-title">{{item.title}}</text>
-        <text class="news-tag">{{item.tag}}</text>
-      </view>
-      <text class="news-summary">{{item.summary}}</text>
-      <view class="news-bottom">
-        <text class="news-date">{{item.date}}</text>
-        <text class="news-link">查看详情 ></text>
-      </view>
+    <view class="section-head">
+      <text class="section-title">Era 博物馆</text>
+      <text class="section-subtitle">从首专到 Midnights，按时代顺序浏览每个 Era 卡片。</text>
     </view>
-  </info-card>
+
+    <scroll-view class="era-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+      <view class="era-row">
+        <view
+          wx:for="{{eras}}"
+          wx:key="id"
+          class="era-card"
+          data-type="{{item.action.type}}"
+          data-route="{{item.action.route}}"
+          data-query="{{item.action.query}}"
+          bindtap="goAction"
+        >
+          <view class="era-accent" style="background: {{item.themeColor}};"></view>
+          <image class="era-cover" src="{{item.cover}}" mode="aspectFill"></image>
+          <text class="era-name">{{item.name}}</text>
+          <text class="era-tagline">{{item.tagline}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <info-card title="最近动态">
+      <view
+        wx:for="{{news}}"
+        wx:key="id"
+        class="news-item"
+        data-type="{{item.action.type}}"
+        data-route="{{item.action.route}}"
+        data-query="{{item.action.query}}"
+        bindtap="goAction"
+      >
+        <view class="news-top">
+          <text class="news-title">{{item.title}}</text>
+          <text class="news-tag">{{item.tag}}</text>
+        </view>
+        <text class="news-summary">{{item.summary}}</text>
+        <view class="news-bottom">
+          <text class="news-date">{{item.dateText}}</text>
+          <text class="news-link">查看详情 ></text>
+        </view>
+      </view>
+
+      <empty-state
+        wx:if="{{!spotlights.length && !eras.length && !news.length}}"
+        title="暂无内容"
+        desc="等你录入第一批真实数据后，这里就会显示。"
+      ></empty-state>
+    </info-card>
+  </block>
 </view>

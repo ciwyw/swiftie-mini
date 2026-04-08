@@ -1,0 +1,169 @@
+import { ROUTES } from '../utils/constants';
+import {
+  fetchAlbumDetail,
+  fetchAlbums,
+  fetchAlbumSongs,
+  fetchDocumentaries,
+  fetchEraDetail,
+  fetchHomeFeed,
+  fetchPerformances,
+  fetchShowDetail,
+  fetchShowVideos,
+  fetchSongDetail,
+  fetchTourDetail,
+  fetchTours,
+  fetchTourShows
+} from './contentApi';
+
+const cache = new Map<string, Promise<unknown>>();
+
+function fromCache<T>(key: string, loader: () => Promise<T>): Promise<T> {
+  const cached = cache.get(key) as Promise<T> | undefined;
+  if (cached) {
+    return cached;
+  }
+
+  const next = loader().catch((error) => {
+    cache.delete(key);
+    throw error;
+  });
+  cache.set(key, next);
+  return next;
+}
+
+export function clearContentStoreCache() {
+  cache.clear();
+}
+
+export function loadHomeFeed() {
+  return fromCache('home', () => fetchHomeFeed());
+}
+
+export function loadAlbumList() {
+  return fromCache('albums', () => fetchAlbums());
+}
+
+export function loadAlbumDetail(id: string) {
+  return fromCache(`album:${id}`, () => fetchAlbumDetail(id));
+}
+
+export function loadAlbumSongs(id: string) {
+  return fromCache(`albumSongs:${id}`, () => fetchAlbumSongs(id));
+}
+
+export async function loadAlbumDetailPage(id: string) {
+  const [album, songs] = await Promise.all([loadAlbumDetail(id), loadAlbumSongs(id)]);
+  return { album, songs };
+}
+
+export function loadSongDetail(id: string) {
+  return fromCache(`song:${id}`, () => fetchSongDetail(id));
+}
+
+export function loadPerformances() {
+  return fromCache('performances', () => fetchPerformances());
+}
+
+export function loadDocumentaries() {
+  return fromCache('documentaries', () => fetchDocumentaries());
+}
+
+export async function loadSongDetailPage(id: string) {
+  const song = await loadSongDetail(id);
+  if (!song) {
+    return null;
+  }
+
+  const [album, performances] = await Promise.all([
+    loadAlbumDetail(song.albumId),
+    loadPerformances()
+  ]);
+
+  return {
+    song,
+    album,
+    mv: song.mv ?? null,
+    relatedPerformances: performances
+      .filter((item) => item.kind === 'live' && item.domain === 'library' && item.songIds.includes(song.id))
+      .slice(0, 2)
+  };
+}
+
+export function loadEraDetail(id: string) {
+  return fromCache(`era:${id}`, () => fetchEraDetail(id));
+}
+
+export async function loadEraDetailPage(id: string) {
+  const exhibit = await loadEraDetail(id);
+  if (!exhibit) {
+    return null;
+  }
+
+  const [album, performances] = await Promise.all([
+    exhibit.albumId ? loadAlbumDetail(exhibit.albumId) : Promise.resolve(null),
+    exhibit.revisit.performanceIds.length > 0 ? loadPerformances() : Promise.resolve([])
+  ]);
+
+  const revisitPerformances = exhibit.revisit.performanceIds
+    .map((performanceId) => performances.find((item) => item.id === performanceId))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  return {
+    ...exhibit,
+    album: album
+      ? {
+          ...album,
+          action: {
+            route: ROUTES.album,
+            query: `id=${album.id}`
+          }
+        }
+      : null,
+    featuredHonors: exhibit.eraHonors.slice(0, 3),
+    remainingHonors: exhibit.eraHonors.slice(3),
+    performances: revisitPerformances
+  };
+}
+
+export function loadTours() {
+  return fromCache('tours', () => fetchTours());
+}
+
+export function loadTourDetail(id: string) {
+  return fromCache(`tour:${id}`, () => fetchTourDetail(id));
+}
+
+export function loadTourShows(id: string) {
+  return fromCache(`tourShows:${id}`, () => fetchTourShows(id));
+}
+
+export async function loadTourDetailPage(id: string) {
+  const [tour, shows] = await Promise.all([loadTourDetail(id), loadTourShows(id)]);
+  return { tour, shows };
+}
+
+export function loadShowDetail(id: string) {
+  return fromCache(`show:${id}`, () => fetchShowDetail(id));
+}
+
+export function loadShowVideos(id: string) {
+  return fromCache(`showVideos:${id}`, () => fetchShowVideos(id));
+}
+
+export async function loadShowDetailPage(id: string) {
+  const show = await loadShowDetail(id);
+  if (!show) {
+    return null;
+  }
+
+  const [tour, videos] = await Promise.all([
+    loadTourDetail(show.tourId),
+    loadShowVideos(id)
+  ]);
+
+  return {
+    show,
+    tour,
+    videos
+  };
+}

@@ -1,7 +1,7 @@
 export interface NewsItem {
   id: string;
   title: string;
-  date: string;
+  publishedAt: number;
   summary: string;
   tag: string;
   action: {

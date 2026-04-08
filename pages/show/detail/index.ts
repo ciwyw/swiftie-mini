@@ -1,21 +1,26 @@
-import { Show, ShowGuide, Video } from '../../../types/tour';
+import { loadShowDetailPage } from '../../../services/contentStore';
+import { Show, Video } from '../../../types/tour';
 import { ROUTES } from '../../../utils/constants';
-import {
-  getShowById,
-  getShowStatusText,
-  getShowGuideByShowId,
-  getTourById,
-  getVideosByShowId
-} from '../../../utils/selectors';
+import { getShowStatusText } from '../../../utils/selectors';
+
+interface ShowDetailView extends Show {
+  statusText: string;
+  dateText: string;
+  saleAtText: string;
+}
+
+interface ShowVideoView extends Video {
+  uploadedAtText: string;
+}
 
 interface ShowDetailData {
-  show: (Show & { statusText: string }) | null;
-  guide: ShowGuide | null;
-  videos: Video[];
+  show: ShowDetailView | null;
+  videos: ShowVideoView[];
   tourName: string;
+  currentShowId: string;
   hasError: boolean;
-  ticketPlatformText: string;
-  saleTimeText: string;
+  isLoading: boolean;
+  loadError: boolean;
   currentSeatMapIndex: number;
   currentSeatMapImage: string;
   canViewPrevSeatMap: boolean;
@@ -23,8 +28,26 @@ interface ShowDetailData {
   seatMapPageText: string;
 }
 
-function buildSeatMapState(guide: ShowGuide | null, currentIndex = 0) {
-  const seatMapImages = guide?.seatMapImages ?? [];
+function formatDay(timestamp: number): string {
+  const value = new Date(timestamp);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateTime(timestamp: number): string {
+  const value = new Date(timestamp);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function buildSeatMapState(show: Pick<Show, 'seatMapImages'> | null, currentIndex = 0) {
+  const seatMapImages = show?.seatMapImages ?? [];
   const hasImages = seatMapImages.length > 0;
   const safeIndex = hasImages ? Math.min(Math.max(currentIndex, 0), seatMapImages.length - 1) : 0;
   const hasMultipleImages = seatMapImages.length > 1;
@@ -41,12 +64,12 @@ function buildSeatMapState(guide: ShowGuide | null, currentIndex = 0) {
 Page({
   data: {
     show: null,
-    guide: null,
     videos: [],
     tourName: '',
+    currentShowId: '',
     hasError: false,
-    ticketPlatformText: '待公布',
-    saleTimeText: '待公布',
+    isLoading: false,
+    loadError: false,
     currentSeatMapIndex: 0,
     currentSeatMapImage: '',
     canViewPrevSeatMap: false,
@@ -55,40 +78,75 @@ Page({
   } as ShowDetailData,
 
   onLoad(options: { id?: string }) {
-    const showId = options.id ?? '';
-    const show = getShowById(showId);
+    return this.loadPage(options.id ?? '');
+  },
 
-    if (!show) {
-      this.setData({ hasError: true });
+  async loadPage(showId: string) {
+    this.setData({
+      currentShowId: showId,
+      hasError: false,
+      isLoading: true,
+      loadError: false
+    });
+
+    if (!showId) {
+      this.setData({ hasError: true, isLoading: false, loadError: false, ...buildSeatMapState(null) });
       return;
     }
 
-    const tour = getTourById(show.tourId);
-    const guide = getShowGuideByShowId(showId) ?? null;
+    try {
+      const detail = await loadShowDetailPage(showId);
+      if (!detail) {
+        this.setData({
+          show: null,
+          videos: [],
+          tourName: '',
+          hasError: true,
+          isLoading: false,
+          loadError: false,
+          ...buildSeatMapState(null)
+        });
+        return;
+      }
 
-    this.setData({
-      show: {
-        ...show,
-        statusText: getShowStatusText(show.status)
-      },
-      guide,
-      videos: getVideosByShowId(showId),
-      tourName: tour?.name ?? '',
-      hasError: false,
-      ticketPlatformText: guide?.ticketPlatform ?? '待公布',
-      saleTimeText: guide?.saleTime ?? '待公布',
-      ...buildSeatMapState(guide)
-    });
+      this.setData({
+        show: {
+          ...detail.show,
+          statusText: getShowStatusText(detail.show.status),
+          dateText: formatDay(detail.show.startAt),
+          saleAtText: detail.show.saleAt ? formatDateTime(detail.show.saleAt) : '待公布'
+        },
+        videos: detail.videos.map((video) => ({
+          ...video,
+          uploadedAtText: formatDateTime(video.uploadedAt)
+        })),
+        tourName: detail.tour?.name ?? '',
+        hasError: false,
+        isLoading: false,
+        loadError: false,
+        ...buildSeatMapState(detail.show)
+      });
+    } catch {
+      this.setData({
+        show: null,
+        videos: [],
+        tourName: '',
+        hasError: false,
+        isLoading: false,
+        loadError: true,
+        ...buildSeatMapState(null)
+      });
+    }
   },
 
   viewPrevSeatMap() {
     const nextIndex = this.data.currentSeatMapIndex - 1;
-    this.setData(buildSeatMapState(this.data.guide, nextIndex));
+    this.setData(buildSeatMapState(this.data.show, nextIndex));
   },
 
   viewNextSeatMap() {
     const nextIndex = this.data.currentSeatMapIndex + 1;
-    this.setData(buildSeatMapState(this.data.guide, nextIndex));
+    this.setData(buildSeatMapState(this.data.show, nextIndex));
   },
 
   goSong(event: { currentTarget: { dataset: { id: string } } }) {
@@ -101,5 +159,9 @@ Page({
     }
 
     wx.navigateTo({ url: `${ROUTES.videoUpload}?showId=${this.data.show.id}` });
+  },
+
+  retryLoad() {
+    return this.loadPage(this.data.currentShowId);
   }
 });

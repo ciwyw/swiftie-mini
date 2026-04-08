@@ -1,9 +1,9 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   getActiveTour,
   getShowById,
-  getShowGuideByShowId,
   getShowStatusText,
   getTimelineTours,
   getTourShowGroupsByTourId,
@@ -45,7 +45,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
       country: 'Japan',
       city: 'Tokyo',
       venue: 'Tokyo Dome',
-      date: '2024-02-10',
+      startAt: Date.UTC(2024, 1, 10),
       status: 'ended'
     },
     {
@@ -54,7 +54,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
       country: 'Canada',
       city: 'Toronto',
       venue: 'Rogers Centre',
-      date: '2024-11-23',
+      startAt: Date.UTC(2024, 10, 23),
       status: 'cancelled'
     },
     {
@@ -63,7 +63,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
       country: 'Singapore',
       city: 'Singapore',
       venue: 'National Stadium',
-      date: '2024-03-08',
+      startAt: Date.UTC(2024, 2, 8),
       status: 'upcoming'
     }
   ]);
@@ -80,12 +80,14 @@ test('toggleGuideChecklistItem stores ids per tour bucket', () => {
   assert.deepEqual(toggleGuideChecklistItem('tour_eras', 'register_account'), []);
 });
 
-test('getTourById returns the tour date range and multiple setlists', () => {
+test('getTourById returns timestamp-based tour windows and multiple setlists', () => {
   const tour = getTourById('tour_eras');
 
   assert.equal(tour?.cover, '/assets/images/ui/avatar-placeholder.png');
   assert.equal(tour?.status, 'ongoing');
-  assert.equal(tour?.rangeLabel, '2023.3 - 2024.12');
+  assert.equal(typeof tour?.announcementAt, 'number');
+  assert.equal(typeof tour?.startAt, 'number');
+  assert.equal(typeof tour?.endAt, 'number');
   assert.deepEqual(tour?.setlists.map((setlist) => setlist.id), ['standard', 'ttpd']);
   assert.equal(tour?.setlists[0]?.songs[0], 'Miss Americana & the Heartbreak Prince');
   assert.equal(tour?.setlists[1]?.songs[2], 'Who’s Afraid of Little Old Me?');
@@ -102,13 +104,23 @@ test('getShowById returns country, surprise guests, and surprise songs', () => {
   ]);
 });
 
-test('getShowGuideByShowId returns structured ticket and venue fields', () => {
-  const guide = getShowGuideByShowId('show_vancouver_n1');
+test('getShowById returns structured ticket and venue fields directly on the show', () => {
+  const show = getShowById('show_vancouver_n1');
 
-  assert.deepEqual(guide, {
-    showId: 'show_vancouver_n1',
+  assert.deepEqual(
+    {
+      id: show?.id,
+      ticketPlatform: show?.ticketPlatform,
+      saleAt: show?.saleAt,
+      entryTime: show?.entryTime,
+      address: show?.address,
+      seatMapImages: show?.seatMapImages,
+      notes: show?.notes
+    },
+    {
+      id: 'show_vancouver_n1',
     ticketPlatform: 'Ticketmaster',
-    saleTime: '2024-10-01 11:00',
+    saleAt: Date.UTC(2024, 9, 1, 3),
     entryTime: '18:00',
     address: '777 Pacific Blvd, Vancouver, BC V6B 4Y8',
     seatMapImages: [
@@ -116,7 +128,8 @@ test('getShowGuideByShowId returns structured ticket and venue fields', () => {
       '/assets/images/ui/avatar-placeholder.png'
     ],
     notes: ['入场口请以现场指引为准', '安检排队较长']
-  });
+    }
+  );
 });
 
 test('getShowStatusText maps all four show states', () => {
@@ -219,9 +232,15 @@ test('timeline tours exclude the ongoing tour hero entry', () => {
   assert.equal(timelineTours.some((tour) => tour.id === activeTour?.id), false);
 });
 
-test('video cards expose uploader metadata', () => {
+test('video cards expose uploader metadata with timestamp uploads', () => {
   const video = getVideosByShowId('show_singapore_n1')[0];
 
   assert.equal(typeof video?.userName, 'string');
-  assert.equal(typeof video?.uploadTime, 'string');
+  assert.equal(typeof video?.uploadedAt, 'number');
+});
+
+test('tour detail template no longer renders rangeLabel', () => {
+  const template = readFileSync(new URL('../pages/tour/detail/index.wxml', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(template, /tour\.rangeLabel/);
 });

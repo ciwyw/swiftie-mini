@@ -1,6 +1,5 @@
 import { albums } from '../data/albums';
 import { newsItems } from '../data/news';
-import { showGuides } from '../data/showGuides';
 import { shows } from '../data/shows';
 import { songs } from '../data/songs';
 import { tours } from '../data/tours';
@@ -10,7 +9,6 @@ import { NewsItem } from '../types/news';
 import { Song } from '../types/song';
 import {
   Show,
-  ShowGuide,
   ShowGuest,
   ShowStatus,
   SurpriseSong,
@@ -24,6 +22,7 @@ import { getFavoriteSongIds } from './storage';
 
 export interface TourShowItem extends Show {
   statusText: string;
+  dateText: string;
   clickable: boolean;
   surpriseGuestSummary: string;
 }
@@ -51,6 +50,14 @@ const TOUR_STATUS_TEXT: Record<TourStatus, string> = {
   break: '空档期'
 };
 
+function formatDay(timestamp: number): string {
+  const value = new Date(timestamp);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function cloneTourSetlist(setlist: TourSetlistVersion): TourSetlistVersion {
   return {
     id: setlist.id,
@@ -77,16 +84,10 @@ function cloneSurpriseSong(song: SurpriseSong): SurpriseSong {
 function cloneShow(show: Show): Show {
   return {
     ...show,
+    seatMapImages: show.seatMapImages ? [...show.seatMapImages] : undefined,
+    notes: show.notes ? [...show.notes] : undefined,
     surpriseGuests: show.surpriseGuests?.map(cloneShowGuest),
     surpriseSongs: show.surpriseSongs?.map(cloneSurpriseSong)
-  };
-}
-
-function cloneShowGuide(guide: ShowGuide): ShowGuide {
-  return {
-    ...guide,
-    seatMapImages: [...guide.seatMapImages],
-    notes: guide.notes ? [...guide.notes] : undefined
   };
 }
 
@@ -94,6 +95,7 @@ export function normalizeTourShowForGroup(show: Show): TourShowItem {
   return {
     ...cloneShow(show),
     statusText: getShowStatusText(show.status),
+    dateText: formatDay(show.startAt),
     clickable: isShowClickable(show),
     surpriseGuestSummary: show.surpriseGuests?.map((guest) => guest.name).join(' / ') ?? ''
   };
@@ -161,12 +163,7 @@ export function getShowById(id: string): Show | undefined {
 }
 
 export function getVideosByShowId(showId: string): Video[] {
-  return videos.filter((video) => video.showId === showId);
-}
-
-export function getShowGuideByShowId(showId: string): ShowGuide | undefined {
-  const guide = showGuides.find((item) => item.showId === showId);
-  return guide ? cloneShowGuide(guide) : undefined;
+  return videos.filter((video) => video.showId === showId).map((video) => ({ ...video }));
 }
 
 export function isShowClickable(show: Pick<Show, 'status'>): boolean {
@@ -174,10 +171,14 @@ export function isShowClickable(show: Pick<Show, 'status'>): boolean {
 }
 
 export function getTourShowGroupsByTourId(tourId: string): TourCountryGroup[] {
-  const tourShows = getShowsByTourId(tourId).sort((a, b) => a.date.localeCompare(b.date));
+  return groupTourShowsByLocation(getShowsByTourId(tourId));
+}
+
+export function groupTourShowsByLocation(tourShows: Show[]): TourCountryGroup[] {
+  const sortedShows = [...tourShows].sort((a, b) => a.startAt - b.startAt);
   const countryMap = new Map<string, Map<string, TourShowItem[]>>();
 
-  tourShows.forEach((show) => {
+  sortedShows.forEach((show) => {
     const cityMap = countryMap.get(show.country) ?? new Map<string, TourShowItem[]>();
     const cityShows = cityMap.get(show.city) ?? [];
     cityShows.push(normalizeTourShowForGroup(show));

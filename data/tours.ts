@@ -1,5 +1,9 @@
 import { Tour } from '../types/tour';
 
+function localDayTimestamp(year: number, month: number, day: number): number {
+  return new Date(year, month - 1, day).getTime();
+}
+
 export const tours: Tour[] = [
   {
     id: 'tour_eras',
@@ -8,10 +12,9 @@ export const tours: Tour[] = [
     status: 'ongoing',
     cover: '/assets/images/ui/avatar-placeholder.png',
     description: 'A career-spanning stadium tour covering every album era.',
-    announcementDate: '2026-01-15',
-    startDate: '2026-03-01',
-    endDate: '2026-08-30',
-    rangeLabel: '2023.3 - 2024.12',
+    announcementAt: localDayTimestamp(2026, 1, 15),
+    startAt: localDayTimestamp(2026, 3, 1),
+    endAt: localDayTimestamp(2026, 8, 30),
     setlists: [
       {
         id: 'standard',
@@ -32,9 +35,8 @@ export const tours: Tour[] = [
     status: 'ended',
     cover: '/assets/images/ui/avatar-placeholder.png',
     description: 'A dark-pop stadium era with snakes, fire, and massive sing-alongs.',
-    startDate: '2018-05-08',
-    endDate: '2018-11-21',
-    rangeLabel: '2018.5 - 2018.11',
+    startAt: localDayTimestamp(2018, 5, 8),
+    endAt: localDayTimestamp(2018, 11, 21),
     setlists: [
       {
         id: 'standard',
@@ -50,9 +52,8 @@ export const tours: Tour[] = [
     status: 'ended',
     cover: '/assets/images/ui/avatar-placeholder.png',
     description: 'The global pop era tour built around 1989 and guest appearances.',
-    startDate: '2015-05-05',
-    endDate: '2015-12-12',
-    rangeLabel: '2015.5 - 2015.12',
+    startAt: localDayTimestamp(2015, 5, 5),
+    endAt: localDayTimestamp(2015, 12, 12),
     setlists: [
       {
         id: 'standard',

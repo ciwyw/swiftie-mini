@@ -1,8 +1,10 @@
+import { loadDocumentaries } from '../../services/contentStore';
 import { Documentary } from '../../types/library';
-import { getDocumentaryList } from '../../utils/librarySelectors';
 
 interface DocumentaryData {
   documentaries: Documentary[];
+  isLoading: boolean;
+  loadError: boolean;
 }
 
 interface DocumentaryCardDataset {
@@ -27,13 +29,35 @@ function showInfoModal(title: string, lines: Array<string | undefined>) {
 
 Page({
   data: {
-    documentaries: []
+    documentaries: [],
+    isLoading: false,
+    loadError: false
   } as DocumentaryData,
 
   onLoad() {
-    this.setData({
-      documentaries: getDocumentaryList()
-    });
+    return this.loadPage();
+  },
+
+  async loadPage() {
+    this.setData({ isLoading: true, loadError: false });
+
+    try {
+      this.setData({
+        documentaries: await loadDocumentaries(),
+        isLoading: false,
+        loadError: false
+      });
+    } catch {
+      this.setData({
+        documentaries: [],
+        isLoading: false,
+        loadError: true
+      });
+    }
+  },
+
+  retryLoad() {
+    return this.loadPage();
   },
 
   openDocumentary(event: { currentTarget: { dataset: DocumentaryCardDataset } }) {

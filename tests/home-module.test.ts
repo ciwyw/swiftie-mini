@@ -12,6 +12,10 @@ import {
   getHomeNews
 } from '../utils/homeSelectors';
 
+function getLocalDayTimestamp(year: number, month: number, day: number) {
+  return new Date(year, month - 1, day).getTime();
+}
+
 function withMockedDate<T>(iso: string, run: () => T): T {
   const RealDate = Date;
   const fixedTime = new RealDate(iso).getTime();
@@ -54,8 +58,8 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
     entityId: 'album_midnights',
     name: 'Midnights',
     cover: '/assets/images/albums/album-midnights.png',
-    startDate: '2026-04-01',
-    endDate: '2026-04-29',
+    startAt: getLocalDayTimestamp(2026, 4, 1),
+    endAt: getLocalDayTimestamp(2026, 4, 29),
     action: {
       type: 'navigateTo',
       route: ROUTES.album,
@@ -68,8 +72,8 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
     entityId: 'tour_eras',
     name: 'The Eras Tour',
     cover: '/assets/images/ui/avatar-placeholder.png',
-    startDate: '2026-03-01',
-    endDate: '2026-08-30',
+    startAt: getLocalDayTimestamp(2026, 3, 1),
+    endAt: getLocalDayTimestamp(2026, 8, 30),
     action: {
       type: 'navigateTo',
       route: ROUTES.tourDetail,
@@ -79,6 +83,7 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
   assert.equal(feed.eras.length, 7);
   assert.equal(feed.news.length, 3);
   assert.equal(feed.news[0]?.id, 'news_1');
+  assert.equal(typeof feed.news[0]?.publishedAt, 'number');
   assert.equal(feed.news[0]?.action.route, ROUTES.tourDetail);
   assert.equal(feed.news[0]?.action.query, 'id=tour_eras');
 });
@@ -92,14 +97,14 @@ test('home feed honors announcement day and tour start day boundaries', () => {
   ]);
   assert.equal(feed.spotlights[0]?.entityId, 'album_midnights');
   assert.equal(feed.spotlights[0]?.cover, '/assets/images/albums/album-midnights.png');
-  assert.equal(feed.spotlights[0]?.startDate, '2026-04-01');
-  assert.equal(feed.spotlights[0]?.endDate, '2026-04-29');
+  assert.equal(feed.spotlights[0]?.startAt, getLocalDayTimestamp(2026, 4, 1));
+  assert.equal(feed.spotlights[0]?.endAt, getLocalDayTimestamp(2026, 4, 29));
   assert.equal(feed.spotlights[0]?.action.route, ROUTES.album);
   assert.equal(feed.spotlights[0]?.action.query, 'id=album_midnights');
   assert.equal(feed.spotlights[1]?.entityId, 'tour_eras');
   assert.equal(feed.spotlights[1]?.cover, '/assets/images/ui/avatar-placeholder.png');
-  assert.equal(feed.spotlights[1]?.startDate, '2026-03-01');
-  assert.equal(feed.spotlights[1]?.endDate, '2026-08-30');
+  assert.equal(feed.spotlights[1]?.startAt, getLocalDayTimestamp(2026, 3, 1));
+  assert.equal(feed.spotlights[1]?.endAt, getLocalDayTimestamp(2026, 8, 30));
   assert.equal(feed.spotlights[1]?.action.route, ROUTES.tourDetail);
   assert.equal(feed.spotlights[1]?.action.query, 'id=tour_eras');
 });
@@ -120,19 +125,19 @@ test('home feed honors release day, release-week end, and the day after release 
   assert.deepEqual(dayAfterReleaseWeek.spotlights.map((item) => item.type), [
     HomeSpotlightType.TourOngoing
   ]);
-  assert.equal(dayAfterReleaseWeek.spotlights[0]?.startDate, '2026-03-01');
-  assert.equal(dayAfterReleaseWeek.spotlights[0]?.endDate, '2026-08-30');
+  assert.equal(dayAfterReleaseWeek.spotlights[0]?.startAt, getLocalDayTimestamp(2026, 3, 1));
+  assert.equal(dayAfterReleaseWeek.spotlights[0]?.endAt, getLocalDayTimestamp(2026, 8, 30));
 });
 
 test('home feed uses preview end dates that stop the day before launch', () => {
-  const previousAlbumAnnouncementDate = albums[6]?.announcementDate;
-  const previousTourAnnouncementDate = tours[0]?.announcementDate;
+  const previousAlbumAnnouncementAt = albums[6]?.announcementAt;
+  const previousTourAnnouncementAt = tours[0]?.announcementAt;
 
   if (albums[6]) {
-    albums[6].announcementDate = '2026-01-15';
+    albums[6].announcementAt = getLocalDayTimestamp(2026, 1, 15);
   }
   if (tours[0]) {
-    tours[0].announcementDate = '2026-01-15';
+    tours[0].announcementAt = getLocalDayTimestamp(2026, 1, 15);
   }
 
   try {
@@ -142,27 +147,27 @@ test('home feed uses preview end dates that stop the day before launch', () => {
       HomeSpotlightType.AlbumPreview,
       HomeSpotlightType.TourPreview
     ]);
-    assert.equal(feed.spotlights[0]?.endDate, '2026-04-29');
-    assert.equal(feed.spotlights[1]?.endDate, '2026-02-28');
+    assert.equal(feed.spotlights[0]?.endAt, getLocalDayTimestamp(2026, 4, 29));
+    assert.equal(feed.spotlights[1]?.endAt, getLocalDayTimestamp(2026, 2, 28));
   } finally {
     if (albums[6]) {
-      albums[6].announcementDate = previousAlbumAnnouncementDate;
+      albums[6].announcementAt = previousAlbumAnnouncementAt;
     }
     if (tours[0]) {
-      tours[0].announcementDate = previousTourAnnouncementDate;
+      tours[0].announcementAt = previousTourAnnouncementAt;
     }
   }
 });
 
 test('home feed orders same-startDate spotlights using the fallback priority branch', () => {
-  const previousAlbumAnnouncementDate = albums[6]?.announcementDate;
-  const previousTourAnnouncementDate = tours[0]?.announcementDate;
+  const previousAlbumAnnouncementAt = albums[6]?.announcementAt;
+  const previousTourAnnouncementAt = tours[0]?.announcementAt;
 
   if (albums[6]) {
-    albums[6].announcementDate = '2026-01-15';
+    albums[6].announcementAt = getLocalDayTimestamp(2026, 1, 15);
   }
   if (tours[0]) {
-    tours[0].announcementDate = '2026-01-15';
+    tours[0].announcementAt = getLocalDayTimestamp(2026, 1, 15);
   }
 
   try {
@@ -174,10 +179,10 @@ test('home feed orders same-startDate spotlights using the fallback priority bra
     ]);
   } finally {
     if (albums[6]) {
-      albums[6].announcementDate = previousAlbumAnnouncementDate;
+      albums[6].announcementAt = previousAlbumAnnouncementAt;
     }
     if (tours[0]) {
-      tours[0].announcementDate = previousTourAnnouncementDate;
+      tours[0].announcementAt = previousTourAnnouncementAt;
     }
   }
 });
@@ -257,8 +262,8 @@ test('home feed uses local-calendar-safe default date derivation when no date is
     HomeSpotlightType.AlbumPreview,
     HomeSpotlightType.TourOngoing
   ]);
-  assert.equal(feed.spotlights[0]?.startDate, '2026-04-01');
-  assert.equal(feed.spotlights[0]?.endDate, '2026-04-29');
+  assert.equal(feed.spotlights[0]?.startAt, getLocalDayTimestamp(2026, 4, 1));
+  assert.equal(feed.spotlights[0]?.endAt, getLocalDayTimestamp(2026, 4, 29));
 });
 
 test('home template makes each news item tappable through the shared action dataset', () => {
@@ -290,7 +295,8 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
       news: unknown[];
     };
     setData: (patch: Partial<HomePageConfig['data']>) => void;
-    onShow: () => void;
+    onShow: () => void | Promise<void>;
+    refreshFeed: () => Promise<void>;
     goAction: (event: { currentTarget: { dataset: Record<string, unknown> } }) => void;
   };
 
@@ -315,6 +321,54 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
   let pageConfig:
     | HomePageConfig
     | undefined;
+  const requestUrls: string[] = [];
+  const remoteFeed = {
+    spotlights: [
+      {
+        id: 'spotlight_album_midnights_album_release_week',
+        type: HomeSpotlightType.AlbumReleaseWeek,
+        entityId: 'album_midnights',
+        name: 'Midnights',
+        cover: '/assets/images/albums/album-midnights.png',
+        startAt: getLocalDayTimestamp(2026, 4, 30),
+        endAt: getLocalDayTimestamp(2026, 5, 6),
+        action: {
+          type: 'navigateTo',
+          route: ROUTES.album,
+          query: 'id=album_midnights'
+        }
+      }
+    ],
+    eras: [
+      {
+        id: 'era_midnights',
+        albumId: 'album_midnights',
+        name: 'Midnights',
+        cover: '/assets/images/albums/album-midnights.png',
+        themeColor: '#324765',
+        tagline: '午夜独白、蓝调霓虹和清醒到发亮的思绪。',
+        action: {
+          type: 'navigateTo',
+          route: ROUTES.eraDetail,
+          query: 'id=era_midnights'
+        }
+      }
+    ],
+    news: [
+      {
+        id: 'news_remote',
+        title: 'Remote Home Feed',
+        publishedAt: getLocalDayTimestamp(2026, 4, 29),
+        summary: 'Loaded from the API layer.',
+        tag: '远程',
+        action: {
+          type: 'navigateTo',
+          route: ROUTES.tourDetail,
+          query: 'id=tour_eras'
+        }
+      }
+    ]
+  };
 
   (globalThis as typeof globalThis & {
     Date?: DateConstructor;
@@ -322,6 +376,12 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
     wx?: {
       switchTab: (options: { url: string }) => void;
       navigateTo: (options: { url: string }) => void;
+      request: (options: {
+        url: string;
+        method?: string;
+        success?: (result: { statusCode: number; data: unknown }) => void;
+        fail?: (error: Error) => void;
+      }) => void;
     };
   }).Date = MockDate as unknown as DateConstructor;
   const switchTabCalls: Array<{ url: string }> = [];
@@ -332,6 +392,12 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
     wx?: {
       switchTab: (options: { url: string }) => void;
       navigateTo: (options: { url: string }) => void;
+      request: (options: {
+        url: string;
+        method?: string;
+        success?: (result: { statusCode: number; data: unknown }) => void;
+        fail?: (error: Error) => void;
+      }) => void;
     };
   }).Page = ((config: HomePageConfig) => {
     pageConfig = config;
@@ -341,6 +407,12 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
     wx?: {
       switchTab: (options: { url: string }) => void;
       navigateTo: (options: { url: string }) => void;
+      request: (options: {
+        url: string;
+        method?: string;
+        success?: (result: { statusCode: number; data: unknown }) => void;
+        fail?: (error: Error) => void;
+      }) => void;
     };
   }).wx = {
     switchTab: (options) => {
@@ -348,6 +420,16 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
     },
     navigateTo: (options) => {
       navigateToCalls.push(options);
+    },
+    request: (options) => {
+      requestUrls.push(options.url);
+      options.success?.({
+        statusCode: 200,
+        data: {
+          code: 0,
+          data: remoteFeed
+        }
+      });
     }
   };
 
@@ -358,21 +440,14 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
     pageConfig.setData = function setData(patch) {
       this.data = { ...this.data, ...patch };
     };
-    pageConfig.onShow();
+    await pageConfig.refreshFeed();
 
-    assert.deepEqual(pageConfig.data.spotlights.map((item) => item.eyebrow), [
-      'NEW RELEASE',
-      'ON TOUR'
-    ]);
+    assert.equal(requestUrls.length, 1);
+    assert.match(requestUrls[0] ?? '', /\/home$/);
+    assert.deepEqual(pageConfig.data.spotlights.map((item) => item.eyebrow), ['NEW RELEASE']);
     assert.equal(pageConfig.data.spotlights[0]?.title, 'Midnights 发布中');
     assert.equal(pageConfig.data.spotlights[0]?.ctaText, '查看专辑');
-
-    currentTime = new RealDate('2026-01-15T08:00:00Z').getTime();
-    pageConfig.onShow();
-
-    assert.deepEqual(pageConfig.data.spotlights.map((item) => item.eyebrow), ['ON TOUR SOON']);
-    assert.equal(pageConfig.data.spotlights[0]?.title, 'The Eras Tour 即将开始');
-    assert.equal(pageConfig.data.spotlights[0]?.ctaText, '查看巡演');
+    assert.equal((pageConfig.data.news[0] as { title?: string } | undefined)?.title, 'Remote Home Feed');
 
     assert.equal(Object.prototype.hasOwnProperty.call(pageConfig.data, 'spotlight'), false);
 

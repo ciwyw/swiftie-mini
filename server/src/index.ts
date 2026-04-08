@@ -1,0 +1,614 @@
+interface D1PreparedStatement {
+  bind(...values: unknown[]): D1PreparedStatement;
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
+  first<T = Record<string, unknown>>(): Promise<T | null>;
+}
+
+interface D1DatabaseLike {
+  prepare(query: string): D1PreparedStatement;
+}
+
+interface Env {
+  DB: D1DatabaseLike;
+}
+
+interface HomeAction {
+  type: 'switchTab' | 'navigateTo';
+  route: string;
+  query?: string;
+}
+
+interface AlbumRecord {
+  id: string;
+  name: string;
+  year: number;
+  cover: string;
+  announcement_at: number | null;
+  release_at: number | null;
+}
+
+interface NewsRecord {
+  id: string;
+  title: string;
+  published_at: number;
+  summary: string;
+  tag: string;
+  action_type: HomeAction['type'];
+  action_route: string;
+  action_query: string | null;
+}
+
+interface EraRecord {
+  id: string;
+  album_id: string;
+  era_name: string;
+  cover: string;
+  theme_color: string;
+  tagline: string;
+  hero_intro: string;
+  signature_looks_json: string;
+  milestones_json: string;
+  era_honors_json: string;
+  revisit_performance_ids_json: string;
+}
+
+interface SongRecord {
+  id: string;
+  name: string;
+  album_id: string;
+  lyrics_json: string;
+  mv_json: string | null;
+}
+
+interface PerformanceRecord {
+  id: string;
+  title: string;
+  song_ids_json: string;
+  kind: 'live' | 'interview' | 'special';
+  domain: 'library' | 'tour';
+  event_name: string;
+  year: number;
+  cover: string;
+  source: string;
+  duration: string;
+  summary: string;
+}
+
+interface DocumentaryRecord {
+  id: string;
+  title: string;
+  year: number;
+  category: 'documentary' | 'concert-film' | 'special';
+  cover: string;
+  platform: string;
+  duration: string;
+  summary: string;
+  related_song_ids_json: string;
+}
+
+interface TourRecord {
+  id: string;
+  name: string;
+  year: number;
+  status: 'ongoing' | 'ended' | 'break';
+  cover: string;
+  description: string;
+  announcement_at: number | null;
+  start_at: number;
+  end_at: number;
+  setlists_json: string;
+}
+
+interface ShowRecord {
+  id: string;
+  tour_id: string;
+  country: string;
+  city: string;
+  venue: string;
+  start_at: number;
+  status: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
+  ticket_platform: string | null;
+  sale_at: number | null;
+  entry_time: string | null;
+  address: string | null;
+  seat_map_images_json: string | null;
+  notes_json: string | null;
+  surprise_guests_json: string | null;
+  surprise_songs_json: string | null;
+}
+
+interface VideoRecord {
+  id: string;
+  show_id: string;
+  title: string;
+  cover: string;
+  song: string | null;
+  user_name: string;
+  uploaded_at: number;
+}
+
+enum HomeSpotlightType {
+  AlbumPreview = 'album_preview',
+  AlbumReleaseWeek = 'album_release_week',
+  TourPreview = 'tour_preview',
+  TourOngoing = 'tour_ongoing'
+}
+
+const ROUTES = {
+  album: '/pages/album/index',
+  tourDetail: '/pages/tour/detail/index',
+  eraDetail: '/pages/era/detail/index'
+} as const;
+
+const HOME_SPOTLIGHT_PRIORITY: Record<HomeSpotlightType, number> = {
+  [HomeSpotlightType.AlbumPreview]: 0,
+  [HomeSpotlightType.TourPreview]: 1,
+  [HomeSpotlightType.AlbumReleaseWeek]: 2,
+  [HomeSpotlightType.TourOngoing]: 3
+};
+
+function json<T>(data: T, init?: ResponseInit): Response {
+  return new Response(JSON.stringify(data), {
+    status: init?.status ?? 200,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      ...init?.headers
+    }
+  });
+}
+
+function success<T>(data: T, init?: ResponseInit): Response {
+  return json(
+    {
+      code: 0,
+      data
+    },
+    init
+  );
+}
+
+function failure(status: number): Response {
+  return json(
+    {
+      code: -1,
+      data: null
+    },
+    { status }
+  );
+}
+
+function notFound(): Response {
+  return failure(404);
+}
+
+function getTodayTimestamp(): number {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+}
+
+function addDays(timestamp: number, days: number): number {
+  const value = new Date(timestamp);
+  value.setDate(value.getDate() + days);
+  return value.getTime();
+}
+
+function parseJsonArray<T>(value: string | null): T[] {
+  if (!value) {
+    return [];
+  }
+
+  return JSON.parse(value) as T[];
+}
+
+function parseJsonObject<T>(value: string | null): T | null {
+  if (!value) {
+    return null;
+  }
+
+  return JSON.parse(value) as T;
+}
+
+function createAction(route: string, query?: string): HomeAction {
+  return {
+    type: 'navigateTo',
+    route,
+    query
+  };
+}
+
+function getSpotlightPriority(type: HomeSpotlightType): number {
+  return HOME_SPOTLIGHT_PRIORITY[type];
+}
+
+function deriveHomeSpotlights(albums: AlbumRecord[], tours: TourRecord[], today = getTodayTimestamp()) {
+  const albumSpotlights = albums.flatMap((album) => {
+    if (!album.announcement_at || !album.release_at) {
+      return [];
+    }
+
+    if (today >= album.announcement_at && today < album.release_at) {
+      return [
+        {
+          id: `spotlight_${album.id}_${HomeSpotlightType.AlbumPreview}`,
+          type: HomeSpotlightType.AlbumPreview,
+          entityId: album.id,
+          name: album.name,
+          cover: album.cover,
+          startAt: album.announcement_at,
+          endAt: addDays(album.release_at, -1),
+          action: createAction(ROUTES.album, `id=${album.id}`)
+        }
+      ];
+    }
+
+    const releaseWeekEnd = addDays(album.release_at, 6);
+    if (today >= album.release_at && today <= releaseWeekEnd) {
+      return [
+        {
+          id: `spotlight_${album.id}_${HomeSpotlightType.AlbumReleaseWeek}`,
+          type: HomeSpotlightType.AlbumReleaseWeek,
+          entityId: album.id,
+          name: album.name,
+          cover: album.cover,
+          startAt: album.release_at,
+          endAt: releaseWeekEnd,
+          action: createAction(ROUTES.album, `id=${album.id}`)
+        }
+      ];
+    }
+
+    return [];
+  });
+
+  const tourSpotlights = tours.flatMap((tour) => {
+    if (tour.announcement_at && today >= tour.announcement_at && today < tour.start_at) {
+      return [
+        {
+          id: `spotlight_${tour.id}_${HomeSpotlightType.TourPreview}`,
+          type: HomeSpotlightType.TourPreview,
+          entityId: tour.id,
+          name: tour.name,
+          cover: tour.cover,
+          startAt: tour.announcement_at,
+          endAt: addDays(tour.start_at, -1),
+          action: createAction(ROUTES.tourDetail, `id=${tour.id}`)
+        }
+      ];
+    }
+
+    if (today >= tour.start_at && today <= tour.end_at) {
+      return [
+        {
+          id: `spotlight_${tour.id}_${HomeSpotlightType.TourOngoing}`,
+          type: HomeSpotlightType.TourOngoing,
+          entityId: tour.id,
+          name: tour.name,
+          cover: tour.cover,
+          startAt: tour.start_at,
+          endAt: tour.end_at,
+          action: createAction(ROUTES.tourDetail, `id=${tour.id}`)
+        }
+      ];
+    }
+
+    return [];
+  });
+
+  return [...albumSpotlights, ...tourSpotlights].sort((left, right) => {
+    const startComparison = right.startAt - left.startAt;
+    if (startComparison !== 0) {
+      return startComparison;
+    }
+
+    return getSpotlightPriority(left.type) - getSpotlightPriority(right.type);
+  });
+}
+
+async function queryAll<T>(db: D1DatabaseLike, query: string, ...params: unknown[]): Promise<T[]> {
+  const statement = params.length > 0 ? db.prepare(query).bind(...params) : db.prepare(query);
+  const result = await statement.all<T>();
+  return result.results;
+}
+
+async function queryFirst<T>(db: D1DatabaseLike, query: string, ...params: unknown[]): Promise<T | null> {
+  const statement = params.length > 0 ? db.prepare(query).bind(...params) : db.prepare(query);
+  return statement.first<T>();
+}
+
+function mapAction(record: NewsRecord): HomeAction {
+  return {
+    type: record.action_type,
+    route: record.action_route,
+    query: record.action_query ?? undefined
+  };
+}
+
+function mapAlbum(record: AlbumRecord) {
+  return {
+    id: record.id,
+    name: record.name,
+    year: record.year,
+    cover: record.cover,
+    announcementAt: record.announcement_at ?? undefined,
+    releaseAt: record.release_at ?? undefined
+  };
+}
+
+function mapSong(record: SongRecord) {
+  return {
+    id: record.id,
+    name: record.name,
+    albumId: record.album_id,
+    lyrics: parseJsonArray(record.lyrics_json),
+    mv: parseJsonObject(record.mv_json) ?? undefined
+  };
+}
+
+function mapPerformance(record: PerformanceRecord) {
+  return {
+    id: record.id,
+    title: record.title,
+    songIds: parseJsonArray<string>(record.song_ids_json),
+    kind: record.kind,
+    domain: record.domain,
+    eventName: record.event_name,
+    year: record.year,
+    cover: record.cover,
+    source: record.source,
+    duration: record.duration,
+    summary: record.summary
+  };
+}
+
+function mapDocumentary(record: DocumentaryRecord) {
+  return {
+    id: record.id,
+    title: record.title,
+    year: record.year,
+    category: record.category,
+    cover: record.cover,
+    platform: record.platform,
+    duration: record.duration,
+    summary: record.summary,
+    relatedSongIds: parseJsonArray<string>(record.related_song_ids_json)
+  };
+}
+
+function mapEra(record: EraRecord) {
+  return {
+    id: record.id,
+    albumId: record.album_id,
+    eraName: record.era_name,
+    hero: {
+      intro: record.hero_intro,
+      cover: record.cover,
+      themeColor: record.theme_color
+    },
+    signatureLooks: parseJsonArray(record.signature_looks_json),
+    milestones: parseJsonArray(record.milestones_json),
+    eraHonors: parseJsonArray(record.era_honors_json),
+    revisit: {
+      performanceIds: parseJsonArray<string>(record.revisit_performance_ids_json)
+    }
+  };
+}
+
+function mapHomeEraCard(record: EraRecord) {
+  return {
+    id: record.id,
+    albumId: record.album_id,
+    name: record.era_name,
+    cover: record.cover,
+    themeColor: record.theme_color,
+    tagline: record.tagline,
+    action: createAction(ROUTES.eraDetail, `id=${record.id}`)
+  };
+}
+
+function mapTour(record: TourRecord) {
+  return {
+    id: record.id,
+    name: record.name,
+    year: record.year,
+    status: record.status,
+    cover: record.cover,
+    description: record.description,
+    announcementAt: record.announcement_at ?? undefined,
+    startAt: record.start_at,
+    endAt: record.end_at,
+    setlists: parseJsonArray(record.setlists_json)
+  };
+}
+
+function mapShow(record: ShowRecord) {
+  return {
+    id: record.id,
+    tourId: record.tour_id,
+    country: record.country,
+    city: record.city,
+    venue: record.venue,
+    startAt: record.start_at,
+    status: record.status,
+    ticketPlatform: record.ticket_platform ?? undefined,
+    saleAt: record.sale_at ?? undefined,
+    entryTime: record.entry_time ?? undefined,
+    address: record.address ?? undefined,
+    seatMapImages: parseJsonArray<string>(record.seat_map_images_json),
+    notes: parseJsonArray<string>(record.notes_json),
+    surpriseGuests: parseJsonArray(record.surprise_guests_json),
+    surpriseSongs: parseJsonArray(record.surprise_songs_json)
+  };
+}
+
+function mapVideo(record: VideoRecord) {
+  return {
+    id: record.id,
+    showId: record.show_id,
+    title: record.title,
+    cover: record.cover,
+    song: record.song ?? undefined,
+    userName: record.user_name,
+    uploadedAt: record.uploaded_at
+  };
+}
+
+async function handleHome(db: D1DatabaseLike): Promise<Response> {
+  const [albums, tours, eras, news] = await Promise.all([
+    queryAll<AlbumRecord>(db, 'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'),
+    queryAll<TourRecord>(db, 'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
+    queryAll<EraRecord>(db, 'SELECT id, album_id, era_name, cover, theme_color, tagline, hero_intro, signature_looks_json, milestones_json, era_honors_json, revisit_performance_ids_json FROM eras ORDER BY rowid ASC'),
+    queryAll<NewsRecord>(db, 'SELECT id, title, published_at, summary, tag, action_type, action_route, action_query FROM news_items ORDER BY published_at DESC, id ASC LIMIT 3')
+  ]);
+
+  return success({
+    spotlights: deriveHomeSpotlights(albums, tours),
+    eras: eras.map(mapHomeEraCard),
+    news: news.map((item) => ({
+      id: item.id,
+      title: item.title,
+      publishedAt: item.published_at,
+      summary: item.summary,
+      tag: item.tag,
+      action: mapAction(item)
+    }))
+  });
+}
+
+async function handleRequest(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'GET') {
+    return failure(405);
+  }
+
+  const url = new URL(request.url);
+  const { pathname } = url;
+
+  if (pathname === '/health') {
+    return success({ ok: true });
+  }
+
+  if (pathname === '/home') {
+    return handleHome(env.DB);
+  }
+
+  const albumSongsMatch = pathname.match(/^\/albums\/([^/]+)\/songs$/);
+  if (albumSongsMatch) {
+    const rows = await queryAll<SongRecord>(
+      env.DB,
+      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE album_id = ? ORDER BY id ASC',
+      albumSongsMatch[1]
+    );
+    return success(rows.map(mapSong));
+  }
+
+  const albumMatch = pathname.match(/^\/albums\/([^/]+)$/);
+  if (albumMatch) {
+    const record = await queryFirst<AlbumRecord>(
+      env.DB,
+      'SELECT id, name, year, cover, announcement_at, release_at FROM albums WHERE id = ?',
+      albumMatch[1]
+    );
+    return success(record ? mapAlbum(record) : null);
+  }
+
+  if (pathname === '/albums') {
+    const rows = await queryAll<AlbumRecord>(
+      env.DB,
+      'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'
+    );
+    return success(rows.map(mapAlbum));
+  }
+
+  const songMatch = pathname.match(/^\/songs\/([^/]+)$/);
+  if (songMatch) {
+    const record = await queryFirst<SongRecord>(
+      env.DB,
+      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE id = ?',
+      songMatch[1]
+    );
+    return success(record ? mapSong(record) : null);
+  }
+
+  if (pathname === '/performances') {
+    const rows = await queryAll<PerformanceRecord>(
+      env.DB,
+      'SELECT id, title, song_ids_json, kind, domain, event_name, year, cover, source, duration, summary FROM performances ORDER BY year DESC, id ASC'
+    );
+    return success(rows.map(mapPerformance));
+  }
+
+  if (pathname === '/documentaries') {
+    const rows = await queryAll<DocumentaryRecord>(
+      env.DB,
+      'SELECT id, title, year, category, cover, platform, duration, summary, related_song_ids_json FROM documentaries ORDER BY year DESC, id ASC'
+    );
+    return success(rows.map(mapDocumentary));
+  }
+
+  const eraMatch = pathname.match(/^\/eras\/([^/]+)$/);
+  if (eraMatch) {
+    const record = await queryFirst<EraRecord>(
+      env.DB,
+      'SELECT id, album_id, era_name, cover, theme_color, tagline, hero_intro, signature_looks_json, milestones_json, era_honors_json, revisit_performance_ids_json FROM eras WHERE id = ?',
+      eraMatch[1]
+    );
+    return success(record ? mapEra(record) : null);
+  }
+
+  const tourShowsMatch = pathname.match(/^\/tours\/([^/]+)\/shows$/);
+  if (tourShowsMatch) {
+    const rows = await queryAll<ShowRecord>(
+      env.DB,
+      'SELECT id, tour_id, country, city, venue, start_at, status, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE tour_id = ? ORDER BY start_at ASC, id ASC',
+      tourShowsMatch[1]
+    );
+    return success(rows.map(mapShow));
+  }
+
+  const tourMatch = pathname.match(/^\/tours\/([^/]+)$/);
+  if (tourMatch) {
+    const record = await queryFirst<TourRecord>(
+      env.DB,
+      'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours WHERE id = ?',
+      tourMatch[1]
+    );
+    return success(record ? mapTour(record) : null);
+  }
+
+  if (pathname === '/tours') {
+    const rows = await queryAll<TourRecord>(
+      env.DB,
+      'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours ORDER BY year DESC, id ASC'
+    );
+    return success(rows.map(mapTour));
+  }
+
+  const showVideosMatch = pathname.match(/^\/shows\/([^/]+)\/videos$/);
+  if (showVideosMatch) {
+    const rows = await queryAll<VideoRecord>(
+      env.DB,
+      'SELECT id, show_id, title, cover, song, user_name, uploaded_at FROM videos WHERE show_id = ? ORDER BY uploaded_at DESC, id ASC',
+      showVideosMatch[1]
+    );
+    return success(rows.map(mapVideo));
+  }
+
+  const showMatch = pathname.match(/^\/shows\/([^/]+)$/);
+  if (showMatch) {
+    const record = await queryFirst<ShowRecord>(
+      env.DB,
+      'SELECT id, tour_id, country, city, venue, start_at, status, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE id = ?',
+      showMatch[1]
+    );
+    return success(record ? mapShow(record) : null);
+  }
+
+  return notFound();
+}
+
+const worker = {
+  fetch(request: Request, env: Env): Promise<Response> {
+    return handleRequest(request, env);
+  }
+};
+
+export default worker;

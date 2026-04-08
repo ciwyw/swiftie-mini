@@ -17,39 +17,28 @@ const HOME_SPOTLIGHT_PRIORITY: HomeSpotlightPriority = {
   [HomeSpotlightType.TourOngoing]: 3
 };
 
-function getTodayIso(today?: string): string {
+function getLocalDayTimestamp(input: string): number {
+  const [year, month, day] = input.split('-').map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1).getTime();
+}
+
+function getTodayTimestamp(today?: string): number {
   if (today) {
-    return today;
+    return getLocalDayTimestamp(today);
   }
 
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 }
 
-function addDays(date: string, days: number): string {
-  const value = new Date(`${date}T00:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + days);
-  return value.toISOString().slice(0, 10);
-}
-
-function addDaysLocal(date: string, days: number): string {
-  const [year, month, day] = date.split('-').map(Number);
-  const value = new Date(year, (month ?? 1) - 1, day ?? 1);
+function addDays(timestamp: number, days: number): number {
+  const value = new Date(timestamp);
   value.setDate(value.getDate() + days);
-
-  const nextYear = value.getFullYear();
-  const nextMonth = String(value.getMonth() + 1).padStart(2, '0');
-  const nextDay = String(value.getDate()).padStart(2, '0');
-
-  return `${nextYear}-${nextMonth}-${nextDay}`;
+  return value.getTime();
 }
 
-function isBetweenInclusive(today: string, startDate: string, endDate: string): boolean {
-  return today >= startDate && today <= endDate;
+function isBetweenInclusive(today: number, startAt: number, endAt: number): boolean {
+  return today >= startAt && today <= endAt;
 }
 
 function createAction(route: string, query: string): HomeAction {
@@ -63,8 +52,8 @@ function createAction(route: string, query: string): HomeAction {
 function createAlbumSpotlight(
   album: Album,
   type: HomeSpotlightType,
-  startDate: string,
-  endDate: string
+  startAt: number,
+  endAt: number
 ): HomeSpotlight {
   return {
     id: `spotlight_${album.id}_${type}`,
@@ -72,8 +61,8 @@ function createAlbumSpotlight(
     entityId: album.id,
     name: album.name,
     cover: album.cover,
-    startDate,
-    endDate,
+    startAt,
+    endAt,
     action: createAction(ROUTES.album, `id=${album.id}`)
   };
 }
@@ -81,8 +70,8 @@ function createAlbumSpotlight(
 function createTourSpotlight(
   tour: Tour,
   type: HomeSpotlightType,
-  startDate: string,
-  endDate: string
+  startAt: number,
+  endAt: number
 ): HomeSpotlight {
   return {
     id: `spotlight_${tour.id}_${type}`,
@@ -90,37 +79,37 @@ function createTourSpotlight(
     entityId: tour.id,
     name: tour.name,
     cover: tour.cover,
-    startDate,
-    endDate,
+    startAt,
+    endAt,
     action: createAction(ROUTES.tourDetail, `id=${tour.id}`)
   };
 }
 
-function getAlbumSpotlights(today: string): HomeSpotlight[] {
+function getAlbumSpotlights(today: number): HomeSpotlight[] {
   return albums.flatMap((album) => {
-    if (!album.announcementDate || !album.releaseDate) {
+    if (!album.announcementAt || !album.releaseAt) {
       return [];
     }
 
-    if (today >= album.announcementDate && today < album.releaseDate) {
+    if (today >= album.announcementAt && today < album.releaseAt) {
       return [
         createAlbumSpotlight(
           album,
           HomeSpotlightType.AlbumPreview,
-          album.announcementDate,
-          addDaysLocal(album.releaseDate, -1)
+          album.announcementAt,
+          addDays(album.releaseAt, -1)
         )
       ];
     }
 
-    const releaseWeekEnd = addDays(album.releaseDate, 6);
+    const releaseWeekEnd = addDays(album.releaseAt, 6);
 
-    if (isBetweenInclusive(today, album.releaseDate, releaseWeekEnd)) {
+    if (isBetweenInclusive(today, album.releaseAt, releaseWeekEnd)) {
       return [
         createAlbumSpotlight(
           album,
           HomeSpotlightType.AlbumReleaseWeek,
-          album.releaseDate,
+          album.releaseAt,
           releaseWeekEnd
         )
       ];
@@ -130,26 +119,26 @@ function getAlbumSpotlights(today: string): HomeSpotlight[] {
   });
 }
 
-function getTourSpotlights(today: string): HomeSpotlight[] {
+function getTourSpotlights(today: number): HomeSpotlight[] {
   return tours.flatMap((tour) => {
-    if (!tour.announcementDate) {
+    if (!tour.announcementAt) {
       return [];
     }
 
-    if (today >= tour.announcementDate && today < tour.startDate) {
+    if (today >= tour.announcementAt && today < tour.startAt) {
       return [
         createTourSpotlight(
           tour,
           HomeSpotlightType.TourPreview,
-          tour.announcementDate,
-          addDaysLocal(tour.startDate, -1)
+          tour.announcementAt,
+          addDays(tour.startAt, -1)
         )
       ];
     }
 
-    if (isBetweenInclusive(today, tour.startDate, tour.endDate)) {
+    if (isBetweenInclusive(today, tour.startAt, tour.endAt)) {
       return [
-        createTourSpotlight(tour, HomeSpotlightType.TourOngoing, tour.startDate, tour.endDate)
+        createTourSpotlight(tour, HomeSpotlightType.TourOngoing, tour.startAt, tour.endAt)
       ];
     }
 
@@ -162,11 +151,11 @@ function getSpotlightPriority(spotlight: HomeSpotlight): number {
 }
 
 export function getHomeSpotlights(today?: string): HomeSpotlight[] {
-  const now = getTodayIso(today);
+  const now = getTodayTimestamp(today);
 
   return [...getAlbumSpotlights(now), ...getTourSpotlights(now)]
     .sort((a, b) => {
-      const dateComparison = b.startDate.localeCompare(a.startDate);
+      const dateComparison = b.startAt - a.startAt;
 
       if (dateComparison !== 0) {
         return dateComparison;
@@ -197,7 +186,7 @@ export function getHomeNews(limit = 3): NewsItem[] {
       ...item,
       action: { ...item.action }
     }))
-    .sort((a, b) => b.date.localeCompare(a.date))
+    .sort((a, b) => b.publishedAt - a.publishedAt)
     .slice(0, limit);
 }
 

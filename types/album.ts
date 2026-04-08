@@ -3,6 +3,6 @@ export interface Album {
   name: string;
   year: number;
   cover: string;
-  announcementDate?: string;
-  releaseDate?: string;
+  announcementAt?: number;
+  releaseAt?: number;
 }

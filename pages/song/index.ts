@@ -1,15 +1,17 @@
 import { Album } from '../../types/album';
 import { Performance } from '../../types/library';
+import { loadSongDetailPage } from '../../services/contentStore';
 import { Song, SongMvAsset } from '../../types/song';
 import { ROUTES } from '../../utils/constants';
-import { getSongVideoSection } from '../../utils/librarySelectors';
-import { getAlbumBySong, getSongById } from '../../utils/selectors';
 import { getFavoriteSongIds, toggleFavoriteSong } from '../../utils/storage';
 
 interface SongData {
   song: Song | null;
   album: Album | null;
+  currentSongId: string;
   hasError: boolean;
+  isLoading: boolean;
+  loadError: boolean;
   isFavorite: boolean;
   showTranslation: boolean;
   mv: SongMvAsset | null;
@@ -63,7 +65,10 @@ Page({
   data: {
     song: null,
     album: null,
+    currentSongId: '',
     hasError: false,
+    isLoading: false,
+    loadError: false,
     isFavorite: false,
     showTranslation: false,
     mv: null,
@@ -71,30 +76,62 @@ Page({
   } as SongData,
 
   onLoad(options: { id?: string }) {
-    const songId = options.id;
-    if (!songId) {
-      this.setData({ hasError: true });
-      return;
-    }
+    return this.loadPage(options.id ?? '');
+  },
 
-    const song = getSongById(songId);
-    if (!song) {
-      this.setData({ hasError: true });
-      return;
-    }
-
-    const album = getAlbumBySong(song) ?? null;
-    const videoSection = getSongVideoSection(song.id);
-    const favoriteIds = getFavoriteSongIds();
-
+  async loadPage(songId: string) {
     this.setData({
-      song,
-      album,
+      currentSongId: songId,
       hasError: false,
-      isFavorite: favoriteIds.includes(song.id),
-      mv: videoSection.mv,
-      relatedPerformances: videoSection.performances
+      isLoading: true,
+      loadError: false
     });
+
+    if (!songId) {
+      this.setData({ hasError: true, isLoading: false, loadError: false });
+      return;
+    }
+
+    try {
+      const detail = await loadSongDetailPage(songId);
+      if (!detail) {
+        this.setData({
+          song: null,
+          album: null,
+          hasError: true,
+          isLoading: false,
+          loadError: false,
+          isFavorite: false,
+          mv: null,
+          relatedPerformances: []
+        });
+        return;
+      }
+
+      const favoriteIds = getFavoriteSongIds();
+
+      this.setData({
+        song: detail.song,
+        album: detail.album,
+        hasError: false,
+        isLoading: false,
+        loadError: false,
+        isFavorite: favoriteIds.includes(detail.song.id),
+        mv: detail.mv,
+        relatedPerformances: detail.relatedPerformances
+      });
+    } catch {
+      this.setData({
+        song: null,
+        album: null,
+        hasError: false,
+        isLoading: false,
+        loadError: true,
+        isFavorite: false,
+        mv: null,
+        relatedPerformances: []
+      });
+    }
   },
 
   onShow() {
@@ -147,5 +184,9 @@ Page({
       return;
     }
     goToDetail(ROUTES.album, album.id);
+  },
+
+  retryLoad() {
+    return this.loadPage(this.data.currentSongId);
   }
 });
