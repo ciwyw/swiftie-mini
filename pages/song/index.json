@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "歌曲详情",
+  "usingComponents": {
+    "lyric-line": "/components/lyric-line/index",
+    "empty-state": "/components/empty-state/index"
+  }
+}

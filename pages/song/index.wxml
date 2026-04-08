@@ -1,0 +1,66 @@
+<view class="container">
+  <empty-state wx:if="{{hasError}}" title="歌曲不存在" desc="请返回资料馆重新选择。"></empty-state>
+
+  <view wx:elif="{{song}}">
+    <view class="card head-card">
+      <view class="head-main">
+        <text class="song-title">{{song.name}}</text>
+        <text class="song-album" wx:if="{{album}}" bindtap="goAlbum">{{album.name}}</text>
+      </view>
+      <view class="head-actions">
+        <button class="translation-btn" bindtap="onToggleTranslation">{{showTranslation ? '隐藏翻译' : '翻译'}}</button>
+        <button class="favorite-btn" bindtap="onToggleFavorite">{{isFavorite ? '取消收藏' : '收藏'}}</button>
+      </view>
+    </view>
+
+    <view class="card video-card" wx:if="{{mv || relatedPerformances.length}}">
+      <text class="block-title">视频内容</text>
+
+      <view
+        wx:if="{{mv}}"
+        class="video-item tappable-video-item"
+        data-kind="mv"
+        data-title="{{mv.title}}"
+        data-subtitle="{{mv.source}}"
+        data-meta="{{mv.duration}}"
+        bindtap="openVideoEntry"
+      >
+        <view class="video-copy">
+          <text class="video-tag">MV</text>
+          <text class="video-title">{{mv.title}}</text>
+          <text class="video-meta">{{mv.source}} · {{mv.duration}}</text>
+        </view>
+        <text class="video-action">预览</text>
+      </view>
+
+      <view
+        wx:for="{{relatedPerformances}}"
+        wx:key="id"
+        class="video-item tappable-video-item"
+        data-kind="performance"
+        data-title="{{item.title}}"
+        data-subtitle="{{item.eventName}} · {{item.year}}"
+        data-meta="{{item.source}} · {{item.duration}}"
+        data-summary="{{item.summary}}"
+        bindtap="openVideoEntry"
+      >
+        <view class="video-copy">
+          <text class="video-tag">Live</text>
+          <text class="video-title">{{item.title}}</text>
+          <text class="video-meta">{{item.eventName}} · {{item.year}}</text>
+        </view>
+        <text class="video-action">查看</text>
+      </view>
+    </view>
+
+    <view class="lyrics-wrap">
+      <lyric-line
+        wx:for="{{song.lyrics}}"
+        wx:key="index"
+        en="{{item.en}}"
+        zh="{{item.zh}}"
+        show-zh="{{showTranslation}}"
+      />
+    </view>
+  </view>
+</view>

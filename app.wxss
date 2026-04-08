@@ -1,0 +1,32 @@
+page {
+  background: #f7f8fa;
+  color: #111111;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+.container {
+  padding: 24rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #666666;
+  font-size: 24rpx;
+}
+
+.link-text {
+  color: #111111;
+  font-size: 26rpx;
+}

@@ -1,0 +1,124 @@
+<view class="container show-page">
+  <empty-state wx:if="{{hasError}}" title="场次不存在" desc="请返回巡演详情重新选择场次。"></empty-state>
+
+  <view wx:elif="{{show}}">
+    <view class="card">
+      <text class="section-title">场次概览</text>
+      <view class="info-list">
+        <view class="info-row">
+          <text class="info-label">日期</text>
+          <text class="info-value">{{show.date}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">场地</text>
+          <text class="info-value">{{show.venue}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">状态</text>
+          <text class="info-value">{{show.statusText}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">城市</text>
+          <text class="info-value">{{show.city}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">国家</text>
+          <text class="info-value">{{show.country}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">巡演</text>
+          <text class="info-value">{{tourName}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{show.surpriseGuests && show.surpriseGuests.length}}" class="guest-block">
+        <text class="subsection-title">惊喜嘉宾</text>
+        <view class="guest-list">
+          <text wx:for="{{show.surpriseGuests}}" wx:key="index" class="guest-item">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view
+      class="card"
+    >
+      <text class="section-title">抢票信息</text>
+      <view class="info-list">
+        <view class="info-row">
+          <text class="info-label">购票平台</text>
+          <text class="info-value">{{ticketPlatformText}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">开售时间</text>
+          <text class="info-value">{{saleTimeText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{guide}}">
+      <text class="section-title">场馆信息</text>
+      <view class="info-list">
+        <view class="info-row">
+          <text class="info-label">地址</text>
+          <text class="info-value">{{guide.address}}</text>
+        </view>
+        <view wx:if="{{guide.entryTime}}" class="info-row">
+          <text class="info-label">入场时间</text>
+          <text class="info-value">{{guide.entryTime}}</text>
+        </view>
+      </view>
+      <view wx:if="{{currentSeatMapImage}}" class="seat-map-section">
+        <image class="seat-map" src="{{currentSeatMapImage}}" mode="aspectFit"></image>
+        <view wx:if="{{seatMapPageText}}" class="seat-map-overlay">
+          <view
+            class="seat-map-icon {{canViewPrevSeatMap ? '' : 'seat-map-icon--disabled'}}"
+            bindtap="viewPrevSeatMap"
+          >
+            <text class="seat-map-icon-text">‹</text>
+          </view>
+          <view class="seat-map-page-badge">{{seatMapPageText}}</view>
+          <view
+            class="seat-map-icon {{canViewNextSeatMap ? '' : 'seat-map-icon--disabled'}}"
+            bindtap="viewNextSeatMap"
+          >
+            <text class="seat-map-icon-text">›</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{guide.notes && guide.notes.length}}" class="notes-list">
+        <text wx:for="{{guide.notes}}" wx:key="*this" class="note-item">- {{item}}</text>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{show.surpriseSongs && show.surpriseSongs.length}}">
+      <text class="section-title">Surprise Songs</text>
+      <view
+        wx:for="{{show.surpriseSongs}}"
+        wx:key="songId"
+        class="song-link"
+        data-id="{{item.songId}}"
+        bindtap="goSong"
+      >
+        <text class="song-link-text">{{item.name}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="video-head">
+        <text class="section-title">饭拍视频</text>
+      </view>
+      <view wx:for="{{videos}}" wx:key="id" class="video-item">
+        <image class="video-cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <view class="video-copy">
+          <text class="video-title">{{item.title}}</text>
+          <text class="video-song" wx:if="{{item.song}}">{{item.song}}</text>
+          <text class="video-meta">{{item.userName}} · {{item.uploadTime}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="upload-footer">
+      <button class="upload-footer-btn" bindtap="openUpload">上传视频</button>
+    </view>
+  </view>
+</view>

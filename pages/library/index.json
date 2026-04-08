@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "资料馆",
+  "usingComponents": {
+    "info-card": "/components/info-card/index"
+  }
+}

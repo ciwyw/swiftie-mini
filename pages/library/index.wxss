@@ -1,0 +1,50 @@
+.library-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.hub-kicker {
+  font-size: 22rpx;
+  color: #8b5e3c;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+}
+
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.entry-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.entry-copy {
+  flex: 1;
+}
+
+.entry-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.entry-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.entry-arrow {
+  font-size: 22rpx;
+  color: #999999;
+  flex-shrink: 0;
+}

@@ -1,0 +1,55 @@
+.list-head {
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.section-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #ececec;
+}
+
+.song-item:last-child {
+  border-bottom: 0;
+}
+
+.song-copy {
+  flex: 1;
+}
+
+.song-name {
+  display: block;
+  font-size: 32rpx;
+  color: #111111;
+}
+
+.song-album {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.song-tag {
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #f3f4f6;
+  font-size: 22rpx;
+  color: #4b5563;
+}

@@ -1,0 +1,8 @@
+<view class="info-card">
+  <view class="info-header" wx:if="{{title || subtitle || meta}}">
+    <text class="info-title" wx:if="{{title}}">{{title}}</text>
+    <text class="info-subtitle" wx:if="{{subtitle}}">{{subtitle}}</text>
+    <text class="info-meta" wx:if="{{meta}}">{{meta}}</text>
+  </view>
+  <slot></slot>
+</view>

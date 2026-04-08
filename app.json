@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/library/index",
+    "pages/album/index",
+    "pages/era/detail/index",
+    "pages/song/index",
+    "pages/song-list/index",
+    "pages/performance/index",
+    "pages/documentary/index",
+    "pages/favorites/index",
+    "pages/tour/index",
+    "pages/tour/detail/index",
+    "pages/show/detail/index",
+    "pages/guide/index",
+    "pages/video/upload/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "Swiftie MVP",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7f8fa",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8a8a8a",
+    "selectedColor": "#111111",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/tour/index",
+        "text": "巡演"
+      },
+      {
+        "pagePath": "pages/library/index",
+        "text": "资料馆"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

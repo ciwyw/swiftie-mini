@@ -1,0 +1,20 @@
+.empty-wrap {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 42rpx 24rpx;
+  text-align: center;
+}
+
+.empty-title {
+  display: block;
+  color: #111111;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 12rpx;
+  color: #888888;
+  font-size: 24rpx;
+}

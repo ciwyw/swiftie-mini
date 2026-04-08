@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "Era 档案",
+  "usingComponents": {
+    "empty-state": "/components/empty-state/index"
+  }
+}

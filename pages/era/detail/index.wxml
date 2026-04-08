@@ -1,0 +1,132 @@
+<view class="container">
+  <empty-state
+    wx:if="{{hasError}}"
+    title="展厅不存在"
+    desc="请返回首页重新选择想进入的 Era。"
+  ></empty-state>
+
+  <view wx:elif="{{exhibit}}" class="page-stack">
+    <view class="card hero-card" style="background: linear-gradient(160deg, {{exhibit.hero.themeColor}}, #ffffff);">
+      <text class="hero-eyebrow">{{exhibit.hero.yearLabel}}</text>
+      <view class="hero-main">
+        <image class="hero-cover" src="{{exhibit.hero.cover}}" mode="aspectFill"></image>
+        <view class="hero-copy">
+          <text class="hero-title">{{exhibit.eraName}}</text>
+          <text class="hero-intro">{{exhibit.hero.intro}}</text>
+          <view
+            wx:if="{{exhibit.album}}"
+            class="hero-link"
+            data-route="{{exhibit.album.action.route}}"
+            data-query="{{exhibit.album.action.query}}"
+            bindtap="goRoute"
+          >
+            <text class="hero-link-label">进入专辑详情</text>
+            <text class="hero-link-title">{{exhibit.album.name}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card section-card">
+      <text class="section-title">代表造型</text>
+      <scroll-view class="looks-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="looks-row">
+          <view class="look-card" wx:for="{{exhibit.signatureLooks}}" wx:key="id">
+            <image class="look-image" src="{{item.image}}" mode="aspectFill"></image>
+            <text wx:if="{{item.title}}" class="look-title">{{item.title}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="card section-card">
+      <view class="section-head">
+        <view>
+          <text class="section-title">时代荣誉</text>
+          <text class="section-subtitle">先看最重要的奖项和成就，再展开完整列表。</text>
+        </view>
+        <text
+          wx:if="{{exhibit.remainingHonors.length}}"
+          class="section-action"
+          bindtap="openHonorSheet"
+        >查看全部</text>
+      </view>
+
+      <view class="honor-list">
+        <view class="honor-card" wx:for="{{exhibit.featuredHonors}}" wx:key="id">
+          <text class="honor-tag">{{item.type === 'award' ? '奖项' : '成就'}}</text>
+          <text class="honor-title">{{item.title}}</text>
+          <text class="honor-meta">{{item.year}} · {{item.organization}}</text>
+          <text class="honor-result">{{item.result}}</text>
+          <text wx:if="{{item.note}}" class="honor-note">{{item.note}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card section-card" wx:if="{{exhibit.performances.length}}">
+      <text class="section-title">时代回看</text>
+      <text class="section-subtitle">只保留这个 Era 最值得重看的 live、采访和特别内容。</text>
+      <view
+        class="revisit-card tappable-card"
+        wx:for="{{exhibit.performances}}"
+        wx:key="id"
+        data-kind="{{item.kind}}"
+        data-title="{{item.title}}"
+        data-subtitle="{{item.eventName}} · {{item.year}}"
+        data-meta="{{item.source}} · {{item.duration}}"
+        data-summary="{{item.summary}}"
+        bindtap="openRevisitItem"
+      >
+        <image class="revisit-cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <view class="revisit-content">
+          <text class="revisit-tag">{{item.kind === 'live' ? 'Live' : item.kind === 'interview' ? '采访' : '特别节目'}}</text>
+          <text class="revisit-title">{{item.title}}</text>
+          <text class="revisit-meta">{{item.eventName}} · {{item.year}}</text>
+          <text class="revisit-summary">{{item.summary}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card section-card">
+      <text class="section-title">关键节点</text>
+      <text class="section-subtitle">按时间回看这个 Era 是如何展开的。</text>
+      <view class="timeline-list">
+        <view class="timeline-item" wx:for="{{exhibit.milestones}}" wx:key="id">
+          <view class="timeline-dot"></view>
+          <view class="timeline-content">
+            <text class="timeline-date">{{item.dateLabel}}</text>
+            <text class="timeline-title">{{item.title}}</text>
+            <text class="timeline-summary">{{item.summary}}</text>
+            <view
+              wx:if="{{item.action}}"
+              class="timeline-action"
+              data-route="{{item.action.route}}"
+              data-query="{{item.action.query}}"
+              bindtap="goRoute"
+            >
+              <text class="timeline-action-text">查看相关内容</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{exhibit && isHonorSheetOpen}}" class="sheet-mask" bindtap="closeHonorSheet">
+    <view class="sheet-panel" catchtap="stopSheetTap">
+      <view class="sheet-handle"></view>
+      <text class="sheet-title">时代荣誉</text>
+      <scroll-view class="sheet-scroll" scroll-y enhanced>
+        <view class="sheet-list">
+          <view class="sheet-item" wx:for="{{exhibit.eraHonors}}" wx:key="id">
+            <text class="honor-tag">{{item.type === 'award' ? '奖项' : '成就'}}</text>
+            <text class="honor-title">{{item.title}}</text>
+            <text class="honor-meta">{{item.year}} · {{item.organization}}</text>
+            <text class="honor-result">{{item.result}}</text>
+            <text wx:if="{{item.note}}" class="honor-note">{{item.note}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

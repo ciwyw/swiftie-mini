@@ -1,0 +1,30 @@
+.section-title {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f1f1f1;
+}
+
+.check-row:last-child {
+  border-bottom: 0;
+}
+
+.checkbox {
+  width: 36rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #111111;
+}
+
+.check-label {
+  font-size: 26rpx;
+  color: #222222;
+}

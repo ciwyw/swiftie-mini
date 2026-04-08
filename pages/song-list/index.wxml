@@ -1,0 +1,16 @@
+<view class="container">
+  <view class="card list-head">
+    <text class="section-title">歌曲列表</text>
+    <text class="section-subtitle">完整歌曲条目与 MV 标记。</text>
+  </view>
+
+  <view class="card">
+    <view wx:for="{{songs}}" wx:key="id" class="song-item" data-id="{{item.id}}" bindtap="goSong">
+      <view class="song-copy">
+        <text class="song-name">{{item.name}}</text>
+        <text class="song-album">{{item.albumName}}</text>
+      </view>
+      <text wx:if="{{item.hasMv}}" class="song-tag">MV</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,319 @@
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.hero-card {
+  overflow: hidden;
+}
+
+.hero-eyebrow {
+  display: block;
+  width: fit-content;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 22rpx;
+  color: #243447;
+}
+
+.hero-main {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 20rpx;
+}
+
+.hero-cover {
+  width: 180rpx;
+  height: 240rpx;
+  border-radius: 24rpx;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.hero-copy {
+  flex: 1;
+}
+
+.hero-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111111;
+}
+
+.hero-intro {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.hero-link {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.hero-link-label,
+.hero-link-title,
+.section-title,
+.section-subtitle,
+.section-action,
+.look-title,
+.honor-tag,
+.honor-title,
+.honor-meta,
+.honor-result,
+.honor-note,
+.revisit-tag,
+.revisit-title,
+.revisit-summary,
+.revisit-meta,
+.timeline-date,
+.timeline-title,
+.timeline-summary,
+.timeline-action-text,
+.sheet-title {
+  display: block;
+}
+
+.hero-link-label {
+  font-size: 20rpx;
+  color: #64748b;
+}
+
+.hero-link-title {
+  margin-top: 8rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.section-card + .section-card {
+  margin-top: 0;
+}
+
+.looks-scroll {
+  margin-top: 20rpx;
+  white-space: nowrap;
+}
+
+.looks-row {
+  display: inline-flex;
+  gap: 20rpx;
+  padding-right: 32rpx;
+}
+
+.look-card {
+  width: 280rpx;
+  flex-shrink: 0;
+}
+
+.look-image {
+  width: 280rpx;
+  height: 360rpx;
+  border-radius: 28rpx;
+  background: #f3f4f6;
+}
+
+.look-title {
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  color: #111111;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  align-items: flex-start;
+}
+
+.section-subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #667085;
+}
+
+.timeline-list,
+.honor-list,
+.sheet-list {
+  margin-top: 20rpx;
+}
+
+.section-action {
+  font-size: 24rpx;
+  color: #324765;
+}
+
+.honor-card,
+.revisit-card,
+.sheet-item {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #f8fafc;
+}
+
+.revisit-card {
+  display: flex;
+  gap: 20rpx;
+  align-items: flex-start;
+}
+
+.revisit-cover {
+  width: 152rpx;
+  height: 152rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+  background: #e5e7eb;
+}
+
+.revisit-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.honor-card + .honor-card,
+.revisit-card + .revisit-card,
+.sheet-item + .sheet-item,
+.timeline-item + .timeline-item {
+  margin-top: 20rpx;
+}
+
+.honor-tag,
+.revisit-tag,
+.timeline-date {
+  font-size: 20rpx;
+  color: #64748b;
+}
+
+.honor-title,
+.revisit-title,
+.timeline-title,
+.sheet-title {
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.honor-meta,
+.honor-result,
+.honor-note,
+.revisit-summary,
+.revisit-meta,
+.timeline-summary {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #667085;
+}
+
+.revisit-meta {
+  margin-top: 10rpx;
+  color: #475467;
+}
+
+.revisit-summary {
+  margin-top: 10rpx;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 18rpx;
+}
+
+.timeline-dot {
+  width: 16rpx;
+  height: 16rpx;
+  margin-top: 10rpx;
+  border-radius: 999rpx;
+  background: #324765;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  position: relative;
+  padding-left: 4rpx;
+  flex: 1;
+}
+
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  left: 7rpx;
+  top: 28rpx;
+  bottom: -22rpx;
+  width: 2rpx;
+  background: #d7dee7;
+}
+
+.timeline-item:last-child::after {
+  display: none;
+}
+
+.sheet-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.sheet-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 72vh;
+  padding: 20rpx 24rpx 32rpx;
+  border-radius: 32rpx 32rpx 0 0;
+  background: #ffffff;
+}
+
+.sheet-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.sheet-handle {
+  width: 88rpx;
+  height: 8rpx;
+  margin: 0 auto 16rpx;
+  border-radius: 999rpx;
+  background: #d7dee7;
+}
+
+.timeline-action {
+  margin-top: 12rpx;
+}
+
+.timeline-action-text {
+  font-size: 22rpx;
+  color: #111111;
+}
+
+.tappable-card:active,
+.hero-link:active,
+.timeline-action:active {
+  opacity: 0.9;
+}
+
+@media (max-width: 480px) {
+  .hero-main {
+    flex-direction: column;
+  }
+
+  .hero-cover {
+    width: 100%;
+    height: 360rpx;
+  }
+}

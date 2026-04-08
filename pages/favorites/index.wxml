@@ -1,0 +1,19 @@
+<view class="container">
+  <view class="card list-head">
+    <text class="section-title">我的收藏</text>
+    <text class="section-subtitle">在这里查看已收藏的歌曲。</text>
+  </view>
+
+  <view class="card">
+    <empty-state wx:if="{{!favorites.length}}" title="还没有收藏歌曲" desc="去歌曲详情页点击收藏吧。"></empty-state>
+    <view wx:else>
+      <view wx:for="{{favorites}}" wx:key="id" class="song-item" data-id="{{item.id}}" bindtap="goSong">
+        <view class="song-copy">
+          <text class="song-name">{{item.name}}</text>
+          <text class="song-album">{{item.albumName}}</text>
+        </view>
+        <text wx:if="{{item.hasMv}}" class="song-tag">MV</text>
+      </view>
+    </view>
+  </view>
+</view>

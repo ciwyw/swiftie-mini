@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="card page-head">
+    <text class="section-title">纪录片</text>
+    <text class="section-subtitle">长内容、幕后特辑和演出影像。</text>
+  </view>
+
+  <view
+    class="card documentary-card tappable-card"
+    wx:for="{{documentaries}}"
+    wx:key="id"
+    data-title="{{item.title}}"
+    data-subtitle="{{item.platform}} · {{item.year}}"
+    data-meta="{{item.duration}}"
+    data-summary="{{item.summary}}"
+    bindtap="openDocumentary"
+  >
+    <text class="item-title">{{item.title}}</text>
+    <text class="item-subtitle">{{item.platform}} · {{item.year}}</text>
+    <text class="item-summary">{{item.summary}}</text>
+    <text class="item-action">查看纪录片信息</text>
+  </view>
+</view>

@@ -1,0 +1,20 @@
+.lyric-line {
+  background: #ffffff;
+  border-radius: 14rpx;
+  border: 1rpx solid #efefef;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.lyric-en {
+  display: block;
+  font-size: 28rpx;
+  color: #111111;
+}
+
+.lyric-zh {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666666;
+}

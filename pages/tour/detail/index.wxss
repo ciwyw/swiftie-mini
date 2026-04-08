@@ -1,0 +1,234 @@
+.hero-card,
+.progress-card {
+  margin-bottom: 20rpx;
+}
+
+.hero-cover {
+  width: 100%;
+  height: 280rpx;
+  border-radius: 16rpx;
+  background: #f1f1f1;
+}
+
+.hero-status {
+  display: inline-flex;
+  margin-top: 18rpx;
+  width: fit-content;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #111111;
+  color: #ffffff;
+  font-size: 22rpx;
+}
+
+.hero-title {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.hero-meta,
+.hero-desc,
+.progress-copy,
+.section-copy {
+  display: block;
+  margin-top: 10rpx;
+  color: #666666;
+  font-size: 24rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.progress-track {
+  margin-top: 16rpx;
+  width: 100%;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background: #ededed;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: #111111;
+}
+
+.setlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.setlist-block {
+  padding: 18rpx;
+  border-radius: 16rpx;
+  background: #f8f8f8;
+}
+
+.setlist-label {
+  display: block;
+  margin-bottom: 14rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.setlist-song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.setlist-song-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.setlist-song-index {
+  width: 32rpx;
+  color: #111111;
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.setlist-song-name {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #111111;
+}
+
+.country-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.country-group {
+  overflow: hidden;
+  border: 1rpx solid #ececec;
+  border-radius: 16rpx;
+}
+
+.country-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 18rpx 20rpx;
+  background: #fafafa;
+}
+
+.country-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.country-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.country-count {
+  color: #777777;
+  font-size: 22rpx;
+}
+
+.country-toggle {
+  font-size: 22rpx;
+  color: #111111;
+}
+
+.country-body {
+  padding: 0 20rpx 10rpx;
+}
+
+.city-group {
+  padding-top: 16rpx;
+}
+
+.city-group + .city-group {
+  border-top: 1rpx solid #f1f1f1;
+}
+
+.city-label {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #444444;
+}
+
+.show-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f1f1f1;
+}
+
+.show-item:last-child {
+  border-bottom: 0;
+}
+
+.show-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.show-date {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.show-venue {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #666666;
+}
+
+.show-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.show-status {
+  font-size: 22rpx;
+  color: #666666;
+}
+
+.guest-summary {
+  max-width: 300rpx;
+  text-align: right;
+  color: #9a6c18;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.show-item--disabled {
+  opacity: 0.45;
+}
+
+.show-item--disabled .show-date,
+.show-item--disabled .show-venue,
+.show-item--disabled .show-status,
+.show-item--disabled .guest-summary {
+  color: #999999;
+}

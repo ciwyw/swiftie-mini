@@ -1,0 +1,4 @@
+<view class="lyric-line">
+  <text class="lyric-en">{{en}}</text>
+  <text wx:if="{{showZh}}" class="lyric-zh">{{zh}}</text>
+</view>

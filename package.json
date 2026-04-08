@@ -1,0 +1,16 @@
+{
+  "name": "swiftie-mini",
+  "private": true,
+  "scripts": {
+    "test:home": "tsx --test tests/home-module.test.ts",
+    "test:era": "tsx --test tests/era-module.test.ts",
+    "test:tour": "tsx --test tests/tour-module.test.ts",
+    "test:library": "tsx --test tests/library-module.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

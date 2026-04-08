@@ -1,0 +1,12 @@
+<view class="container">
+  <view class="card profile-card">
+    <image class="avatar" src="{{profile.avatarUrl}}" mode="aspectFill"></image>
+    <view class="profile-info">
+      <text class="profile-name">{{profile.nickName}}</text>
+      <text class="profile-tip">{{hasWechatProfile ? '当前展示的是微信头像和昵称' : '点击下方按钮同步当前微信资料'}}</text>
+      <button class="sync-btn" bindtap="onSyncWechatProfile">
+        {{hasWechatProfile ? '重新同步微信资料' : '同步微信资料'}}
+      </button>
+    </view>
+  </view>
+</view>

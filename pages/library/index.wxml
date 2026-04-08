@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="card library-head">
+    <text class="hub-kicker">Archive</text>
+    <text class="title">资料馆</text>
+    <text class="subtitle">从专辑、歌曲、表演与纪录片进入资料馆。</text>
+  </view>
+
+  <view class="entry-list">
+    <view
+      wx:for="{{entries}}"
+      wx:key="id"
+      class="card entry-card"
+      data-route="{{item.route}}"
+      bindtap="goEntry"
+    >
+      <view class="entry-copy">
+        <text class="entry-title">{{item.title}}</text>
+        <text class="entry-subtitle">{{item.subtitle}}</text>
+      </view>
+      <text class="entry-arrow">查看 &gt;</text>
+    </view>
+  </view>
+</view>

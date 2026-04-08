@@ -1,0 +1,159 @@
+<h2>Era Detail Redesign Directions</h2>
+<p class="subtitle">目标是更像有用的 Era 档案页，而不是抽象展陈。你刚才确认的方向是「偏资料感，但保留一点 Era 气质」。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Archive First</div>
+        <div class="mockup-body">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:10px;border-radius:12px;background:#eef3f8;">
+              <strong>Hero</strong><br>
+              cover + intro + album entry
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Signature Looks</strong><br>
+              horizontal image gallery
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Key Awards</strong><br>
+              3 highlights + expand
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Listen / Watch</strong><br>
+              live, interview, special video only
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Timeline</strong><br>
+              4-6 key moments
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Archive First</h3>
+      <p>最实用，优先把用户最想点开的内容排到前面。</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>奖项和视频价值感最强</li>
+            <li>信息结构非常清楚</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>情绪氛围会稍弱一点</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Gallery + Archive</div>
+        <div class="mockup-body">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:10px;border-radius:12px;background:#eef3f8;">
+              <strong>Hero</strong><br>
+              cover + intro + album entry
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Signature Looks</strong><br>
+              full-width swipe gallery
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+                <strong>Timeline</strong>
+              </div>
+              <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+                <strong>Key Awards</strong>
+              </div>
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Listen / Watch</strong><br>
+              live / interview picks
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Gallery + Archive</h3>
+      <p>保留一些“展厅感”，但内容已经明显转向资料页。</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>图集会更有吸引力</li>
+            <li>实用和气质比较平衡</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>中段信息层次要设计得很克制</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Curated Guide</div>
+        <div class="mockup-body">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:10px;border-radius:12px;background:#eef3f8;">
+              <strong>Hero</strong><br>
+              cover + intro + one editor note
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>This Era in 3 Signals</strong><br>
+              look / award / song
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Looks</strong>
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Watch First</strong>
+            </div>
+            <div style="padding:10px;border-radius:12px;background:#f7f7f7;">
+              <strong>Timeline</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Curated Guide</h3>
+      <p>编辑导览感更强，适合新粉，但资料密度最低。</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>阅读门槛低</li>
+            <li>页面气质最完整</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>不如前两个实用</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>My Recommendation</h3>
+  <p class="subtitle">推荐 <strong>B. Gallery + Archive</strong>。它最贴近你说的「偏实用，但不要无聊」：保留 Signature Looks 的横划吸引力，把 Signature Visuals 删掉，把奖项和 live/video 提到核心位置，同时继续保留一个简洁时间线来稳住 Era 叙事。</p>
+</div>

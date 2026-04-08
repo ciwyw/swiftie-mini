@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="card page-head">
+    <text class="section-title">Live 表演</text>
+    <text class="section-subtitle">典礼、节目和特别舞台。</text>
+  </view>
+
+  <view
+    class="card performance-card tappable-card"
+    wx:for="{{performances}}"
+    wx:key="id"
+    data-title="{{item.title}}"
+    data-subtitle="{{item.eventName}} · {{item.year}}"
+    data-meta="{{item.source}} · {{item.duration}}"
+    data-summary="{{item.summary}}"
+    bindtap="openPerformance"
+  >
+    <text class="item-title">{{item.title}}</text>
+    <text class="item-subtitle">{{item.eventName}} · {{item.year}}</text>
+    <text class="item-summary">{{item.summary}}</text>
+    <text class="item-action">查看演出信息</text>
+  </view>
+</view>

@@ -1,0 +1,106 @@
+<h2>Dynamic Homepage Logic</h2>
+<p class="subtitle">首页不是固定排序，而是根据有没有“大事件”切换主视觉。</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">State A. 有新专 / 巡演预告</div>
+    <div class="mockup-body">
+      <div class="placeholder" style="height:70px;">Top Hero: 新专倒计时 / 巡演倒计时</div>
+      <div class="placeholder" style="height:54px; margin-top:10px;">今日焦点</div>
+      <div class="placeholder" style="height:60px; margin-top:10px;">Era 博物馆入口</div>
+      <div class="placeholder" style="height:54px; margin-top:10px;">随机发现</div>
+      <div class="placeholder" style="height:54px; margin-top:10px;">新闻动态</div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">State B. 无大事件</div>
+    <div class="mockup-body">
+      <div class="placeholder" style="height:76px;">Top Hero: 进入 Era 博物馆</div>
+      <div class="placeholder" style="height:54px; margin-top:10px;">本期展品 / 标志事件</div>
+      <div class="placeholder" style="height:54px; margin-top:10px;">随机发现</div>
+      <div class="placeholder" style="height:46px; margin-top:10px;">新闻动态</div>
+      <div class="placeholder" style="height:46px; margin-top:10px;">资料馆 / 巡演快捷入口</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>“今日焦点”是什么</h3>
+  <div class="cards">
+    <div class="card" data-choice="focus-event-card" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="mockup">
+          <div class="mockup-header">Option A</div>
+          <div class="mockup-body">
+            <div class="label">TODAY'S SPOTLIGHT</div>
+            <h3 style="margin:8px 0 4px;">Eras Tour Singapore Night 2</h3>
+            <p class="subtitle">今晚场次看点、surprise songs、场馆提示</p>
+            <div class="mock-button">查看巡演详情</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>事件焦点卡</h3>
+        <p>当下最值得点开的一个事件，只保留 1 张，不做列表。</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="focus-story-card" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="mockup">
+          <div class="mockup-header">Option B</div>
+          <div class="mockup-body">
+            <div class="label">TODAY'S SPOTLIGHT</div>
+            <h3 style="margin:8px 0 4px;">Why Red Era Still Hurts</h3>
+            <p class="subtitle">一个编辑式主题切口，带你进 Red 展厅</p>
+            <div class="mock-button">进入展厅</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>策展焦点卡</h3>
+        <p>没有大事件时，它就变成“今天首页想讲的一个主题”。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>“随机发现”是什么</h3>
+  <div class="cards">
+    <div class="card" data-choice="discovery-object" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="mockup">
+          <div class="mockup-header">Option A</div>
+          <div class="mockup-body">
+            <div class="label">RANDOM DISCOVERY</div>
+            <h3 style="margin:8px 0 4px;">Snake Ring Micro Exhibit</h3>
+            <p class="subtitle">一件代表物，配 1 段短故事，点开看完整背景。</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>展品式发现</h3>
+        <p>更像逛馆，最贴合博物馆概念。</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="discovery-jump" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="mockup">
+          <div class="mockup-header">Option B</div>
+          <div class="mockup-body">
+            <div class="label">RANDOM DISCOVERY</div>
+            <h3 style="margin:8px 0 4px;">From folklore to long pond</h3>
+            <p class="subtitle">给一个有连接感的跳转：专辑 -> 纪录片 -> live。</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>路径式发现</h3>
+        <p>不是给单个内容，而是给一条“顺着逛下去”的路线。</p>
+      </div>
+    </div>
+  </div>
+</div>

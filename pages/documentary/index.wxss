@@ -1,0 +1,51 @@
+.page-head {
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.section-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.documentary-card + .documentary-card {
+  margin-top: 20rpx;
+}
+
+.tappable-card {
+  padding-bottom: 20rpx;
+}
+
+.tappable-card:active {
+  opacity: 0.9;
+}
+
+.item-title {
+  display: block;
+  font-size: 32rpx;
+  color: #111111;
+  font-weight: 600;
+}
+
+.item-subtitle,
+.item-summary {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.item-action {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #111111;
+}

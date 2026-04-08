@@ -1,0 +1,98 @@
+.album-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.album-cover {
+  width: 120rpx;
+  height: 120rpx;
+  margin-right: 20rpx;
+  border-radius: 12rpx;
+  background: #f0f0f0;
+}
+
+.album-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.album-year {
+  display: block;
+  margin-top: 8rpx;
+  color: #666666;
+  font-size: 24rpx;
+}
+
+.album-list-head {
+  margin-bottom: 20rpx;
+}
+
+.album-list-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  color: #666666;
+  font-size: 24rpx;
+}
+
+.block-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.song-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f1f1f1;
+}
+
+.song-row:last-child {
+  border-bottom: 0;
+}
+
+.song-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.song-name {
+  font-size: 28rpx;
+}
+
+.song-tag {
+  display: inline-block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.song-arrow {
+  color: #999999;
+}
+
+.album-row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f1f1f1;
+}
+
+.album-row:last-child {
+  border-bottom: 0;
+}
+
+.album-cover--list {
+  width: 96rpx;
+  height: 96rpx;
+  margin-right: 18rpx;
+}
+
+.album-copy {
+  flex: 1;
+}

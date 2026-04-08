@@ -1,0 +1,16 @@
+<view class="container">
+  <view class="card" wx:for="{{steps}}" wx:key="title" wx:for-item="step">
+    <text class="section-title">{{step.title}}</text>
+    <view
+      wx:for="{{step.items}}"
+      wx:key="id"
+      wx:for-item="guideItem"
+      class="check-row"
+      data-id="{{guideItem.id}}"
+      bindtap="toggleItem"
+    >
+      <text class="checkbox">{{checkedIds.indexOf(guideItem.id) > -1 ? '✓' : '○'}}</text>
+      <text class="check-label">{{guideItem.label}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,31 @@
+.info-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.info-header {
+  margin-bottom: 12rpx;
+}
+
+.info-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.info-subtitle {
+  display: block;
+  font-size: 24rpx;
+  margin-top: 6rpx;
+  color: #666666;
+}
+
+.info-meta {
+  display: block;
+  font-size: 22rpx;
+  margin-top: 6rpx;
+  color: #999999;
+}

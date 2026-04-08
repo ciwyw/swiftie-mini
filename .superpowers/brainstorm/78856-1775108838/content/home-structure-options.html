@@ -1,0 +1,84 @@
+<h2>Homepage Direction</h2>
+<p class="subtitle">目标是让首页先像入口展厅，再承担少量动态追更。</p>
+
+<div class="cards">
+  <div class="card" data-choice="museum-first" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Museum First</div>
+        <div class="mockup-body">
+          <div class="label">Hero</div>
+          <div class="placeholder" style="height:64px;">进入 Era 博物馆</div>
+          <div class="label" style="margin-top:12px;">Core</div>
+          <div class="placeholder" style="height:54px;">Era 入口横滑</div>
+          <div class="placeholder" style="height:54px;">本期展品</div>
+          <div class="placeholder" style="height:54px;">随机发现</div>
+          <div class="label" style="margin-top:12px;">Pulse</div>
+          <div class="placeholder" style="height:46px;">新专 / 巡演预告</div>
+          <div class="placeholder" style="height:46px;">最近动态</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>博物馆主场型</h3>
+      <p>第一屏就把用户带进馆，动态模块只负责让首页保持活性。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="editorial-mix" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Editorial Mix</div>
+        <div class="mockup-body">
+          <div class="label">Top</div>
+          <div class="placeholder" style="height:46px;">新专 / 巡演预告</div>
+          <div class="placeholder" style="height:46px;">今日焦点</div>
+          <div class="label" style="margin-top:12px;">Middle</div>
+          <div class="placeholder" style="height:64px;">Era 博物馆入口</div>
+          <div class="placeholder" style="height:54px;">随机发现</div>
+          <div class="placeholder" style="height:54px;">新闻动态</div>
+          <div class="label" style="margin-top:12px;">Bottom</div>
+          <div class="placeholder" style="height:46px;">资料馆 / 巡演快捷入口</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>编辑策展混合型</h3>
+      <p>更像内容首页，信息密度高一些，但“进馆”感会弱一点。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Taylor 博物馆内容模型</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="era-hall" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h3>Era 展厅</h3>
+        <p>每个 era 有自己的封面、关键词、情绪和入口。</p>
+      </div>
+    </div>
+    <div class="option" data-choice="signature-items" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h3>代表展品</h3>
+        <p>比如服装、符号、舞台元素、歌词手稿、MV 场景、乐器。</p>
+      </div>
+    </div>
+    <div class="option" data-choice="milestone-events" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h3>标志事件</h3>
+        <p>某个 era 的关键节点、出圈时刻、转折故事。</p>
+      </div>
+    </div>
+    <div class="option" data-choice="listen-watch-links" onclick="toggleSelect(this)">
+      <div class="letter">4</div>
+      <div class="content">
+        <h3>去听去看入口</h3>
+        <p>从展厅直接跳到专辑、歌曲、MV、巡演相关内容。</p>
+      </div>
+    </div>
+  </div>
+</div>

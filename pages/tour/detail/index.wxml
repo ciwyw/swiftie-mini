@@ -1,0 +1,78 @@
+<view class="container">
+  <empty-state wx:if="{{hasError}}" title="巡演不存在" desc="请返回巡演列表重新选择。"></empty-state>
+
+  <view wx:elif="{{tour}}">
+    <view class="card hero-card">
+      <image class="hero-cover" src="{{tour.cover}}" mode="aspectFill"></image>
+      <text class="hero-status">{{tourStatusText}}</text>
+      <text class="hero-title">{{tour.name}}</text>
+      <text class="hero-meta">{{tour.rangeLabel}}</text>
+      <text class="hero-desc">{{tour.description}}</text>
+    </view>
+
+    <view class="card progress-card">
+      <text class="section-title">巡演进度</text>
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{progress.percent}}%;"></view>
+      </view>
+      <text class="progress-copy">已完成 {{progress.completed}} / {{progress.total}} 场</text>
+    </view>
+
+    <view class="card">
+      <text class="section-title">官方 setlist</text>
+      <view wx:if="{{tour.setlists.length}}" class="setlist-list">
+        <view wx:for="{{tour.setlists}}" wx:key="id" wx:for-item="setlist" class="setlist-block">
+          <text class="setlist-label">{{setlist.label}}</text>
+          <view class="setlist-song-list">
+            <view wx:for="{{setlist.songs}}" wx:key="index" wx:for-item="song" class="setlist-song-item">
+              <text class="setlist-song-index">{{index + 1}}</text>
+              <text class="setlist-song-name">{{song}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <text wx:else class="section-copy">暂无 setlist 数据。</text>
+    </view>
+
+    <view class="card">
+      <text class="section-title">场次列表</text>
+      <empty-state wx:if="{{!showGroups.length}}" title="暂无场次数据" desc="后续会补充更多巡演场次。"></empty-state>
+      <view wx:else class="country-list">
+        <view wx:for="{{showGroups}}" wx:key="country" wx:for-item="countryItem" class="country-group">
+          <view class="country-header" data-country="{{countryItem.country}}" bindtap="toggleCountry">
+            <view class="country-header-main">
+              <text class="country-name">{{countryItem.country}}</text>
+              <text class="country-count">{{countryItem.cities.length}} 个城市</text>
+            </view>
+            <text class="country-toggle">{{countryItem.isExpanded ? '收起' : '展开'}}</text>
+          </view>
+          <view wx:if="{{countryItem.isExpanded}}" class="country-body">
+            <view wx:for="{{countryItem.cities}}" wx:key="city" wx:for-item="cityItem" class="city-group">
+              <text class="city-label">{{cityItem.city}}</text>
+              <view
+                wx:for="{{cityItem.shows}}"
+                wx:key="id"
+                wx:for-item="showItem"
+                class="show-item {{showItem.clickable ? '' : 'show-item--disabled'}}"
+                data-show-id="{{showItem.id}}"
+                data-clickable="{{showItem.clickable ? 1 : 0}}"
+                bindtap="openShow"
+              >
+                <view class="show-main">
+                  <text class="show-date">{{showItem.date}}</text>
+                  <text class="show-venue">{{showItem.venue}}</text>
+                </view>
+                <view class="show-side">
+                  <text class="show-status">{{showItem.statusText}}</text>
+                  <text wx:if="{{showItem.surpriseGuestSummary}}" class="guest-summary">
+                    {{showItem.surpriseGuestSummary}}
+                  </text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+<view class="empty-wrap">
+  <text class="empty-title">{{title}}</text>
+  <text class="empty-desc">{{desc}}</text>
+</view>

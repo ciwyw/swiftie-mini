@@ -1,0 +1,67 @@
+<view class="container">
+  <view wx:if="{{spotlights.length}}" class="spotlight-list">
+    <view
+      wx:for="{{spotlights}}"
+      wx:key="id"
+      class="spotlight-card card"
+      data-type="{{item.action.type}}"
+      data-route="{{item.action.route}}"
+      data-query="{{item.action.query}}"
+      bindtap="goAction"
+    >
+      <view class="spotlight-copy">
+        <text class="spotlight-eyebrow">{{item.eyebrow}}</text>
+        <text class="spotlight-title">{{item.title}}</text>
+        <text class="spotlight-summary">{{item.summary}}</text>
+        <text class="spotlight-cta">{{item.ctaText}}</text>
+      </view>
+      <image class="spotlight-cover" src="{{item.cover}}" mode="aspectFill"></image>
+    </view>
+  </view>
+
+  <view class="section-head">
+    <text class="section-title">Era 博物馆</text>
+    <text class="section-subtitle">从首专到 Midnights，按时代顺序浏览每个 Era 卡片。</text>
+  </view>
+
+  <scroll-view class="era-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+    <view class="era-row">
+      <view
+        wx:for="{{eras}}"
+        wx:key="id"
+        class="era-card"
+        data-type="{{item.action.type}}"
+        data-route="{{item.action.route}}"
+        data-query="{{item.action.query}}"
+        bindtap="goAction"
+      >
+        <view class="era-accent" style="background: {{item.themeColor}};"></view>
+        <image class="era-cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <text class="era-name">{{item.name}}</text>
+        <text class="era-tagline">{{item.tagline}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <info-card title="最近动态">
+    <view
+      wx:for="{{news}}"
+      wx:key="id"
+      class="news-item"
+      data-type="{{item.action.type}}"
+      data-route="{{item.action.route}}"
+      data-query="{{item.action.query}}"
+      bindtap="goAction"
+    >
+      <view class="news-top">
+        <text class="news-title">{{item.title}}</text>
+        <text class="news-tag">{{item.tag}}</text>
+      </view>
+      <text class="news-summary">{{item.summary}}</text>
+      <view class="news-bottom">
+        <text class="news-date">{{item.date}}</text>
+        <text class="news-link">查看详情 ></text>
+      </view>
+    </view>
+  </info-card>
+</view>
