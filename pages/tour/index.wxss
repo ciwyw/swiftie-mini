@@ -57,22 +57,16 @@
 }
 
 .timeline-rail {
-  width: 108rpx;
+  width: 40rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
 }
 
-.timeline-year {
-  font-size: 24rpx;
-  color: #666666;
-}
-
 .timeline-dot {
   width: 18rpx;
   height: 18rpx;
-  margin-top: 10rpx;
   border-radius: 50%;
   background: #111111;
 }

@@ -1,14 +1,10 @@
 import { loadTours } from '../../services/contentStore';
-import { Tour } from '../../types/tour';
+import { TOUR_STATUS, Tour } from '../../types/tour';
 import { ROUTES } from '../../utils/constants';
-
-interface TimelineTour extends Tour {
-  timelineLabel: string;
-}
 
 interface TourData {
   activeTour: Tour | null;
-  timelineTours: TimelineTour[];
+  timelineTours: Tour[];
   isLoading: boolean;
   loadError: boolean;
 }
@@ -30,14 +26,10 @@ Page({
 
     try {
       const tours = await loadTours();
-      const activeTour = tours.find((tour) => tour.status === 'ongoing') ?? null;
+      const activeTour = tours.find((tour) => tour.status === TOUR_STATUS.ONGOING) ?? null;
       const timelineTours = tours
-        .filter((tour) => tour.status === 'ended')
-        .sort((left, right) => right.year - left.year)
-        .map((tour) => ({
-          ...tour,
-          timelineLabel: `${tour.year}`
-        }));
+        .filter((tour) => tour.status === TOUR_STATUS.ENDED)
+        .sort((left, right) => right.startAt - left.startAt);
 
       this.setData({
         activeTour,

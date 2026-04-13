@@ -1,5 +1,5 @@
 import { loadTourDetailPage } from '../../../services/contentStore';
-import { Tour, TourProgress } from '../../../types/tour';
+import { TOUR_STATUS, Tour, TourProgress } from '../../../types/tour';
 import { ROUTES } from '../../../utils/constants';
 import {
   getTourProgress,
@@ -87,7 +87,7 @@ Page({
         hasError: false,
         isLoading: false,
         loadError: false,
-        isEndedTour: tour.status === 'ended',
+        isEndedTour: tour.status === TOUR_STATUS.ENDED,
         tourStatusText: getTourStatusText(tour.status)
       });
     } catch {

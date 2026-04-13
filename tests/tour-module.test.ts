@@ -17,7 +17,16 @@ import {
   getGuideChecklistByTourId,
   toggleGuideChecklistItem
 } from '../utils/storage';
-import type { Show } from '../types/tour';
+import { TOUR_STATUS, type Show } from '../types/tour';
+
+const TOUR_IDS = {
+  eras: '48291357',
+  reputation: '73160584',
+  the1989: '26490831',
+  red: '59014276',
+  speakNow: '81732465',
+  fearless: '14685723'
+} as const;
 
 const storage = new Map<string, unknown>();
 
@@ -41,7 +50,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
   const progress = getTourProgress([
     {
       id: 's1',
-      tourId: 'tour_eras',
+      tourId: TOUR_IDS.eras,
       country: 'Japan',
       city: 'Tokyo',
       venue: 'Tokyo Dome',
@@ -50,7 +59,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
     },
     {
       id: 's2',
-      tourId: 'tour_eras',
+      tourId: TOUR_IDS.eras,
       country: 'Canada',
       city: 'Toronto',
       venue: 'Rogers Centre',
@@ -59,7 +68,7 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
     },
     {
       id: 's3',
-      tourId: 'tour_eras',
+      tourId: TOUR_IDS.eras,
       country: 'Singapore',
       city: 'Singapore',
       venue: 'National Stadium',
@@ -72,25 +81,27 @@ test('getTourProgress keeps cancelled shows in total while counting ended shows'
 });
 
 test('toggleGuideChecklistItem stores ids per tour bucket', () => {
-  assert.deepEqual(getGuideChecklistByTourId('tour_eras'), []);
+  assert.deepEqual(getGuideChecklistByTourId(TOUR_IDS.eras), []);
   assert.deepEqual(
-    toggleGuideChecklistItem('tour_eras', 'register_account'),
+    toggleGuideChecklistItem(TOUR_IDS.eras, 'register_account'),
     ['register_account']
   );
-  assert.deepEqual(toggleGuideChecklistItem('tour_eras', 'register_account'), []);
+  assert.deepEqual(toggleGuideChecklistItem(TOUR_IDS.eras, 'register_account'), []);
 });
 
-test('getTourById returns timestamp-based tour windows and multiple setlists', () => {
-  const tour = getTourById('tour_eras');
+test('getTourById returns timestamp-based tour windows, numeric status, and label-only setlists', () => {
+  const tour = getTourById(TOUR_IDS.eras);
 
   assert.equal(tour?.cover, '/assets/images/ui/avatar-placeholder.png');
-  assert.equal(tour?.status, 'ongoing');
+  assert.equal(tour?.status, TOUR_STATUS.ONGOING);
   assert.equal(typeof tour?.announcementAt, 'number');
   assert.equal(typeof tour?.startAt, 'number');
   assert.equal(typeof tour?.endAt, 'number');
-  assert.deepEqual(tour?.setlists.map((setlist) => setlist.id), ['standard', 'ttpd']);
-  assert.equal(tour?.setlists[0]?.songs[0], 'Miss Americana & the Heartbreak Prince');
-  assert.equal(tour?.setlists[1]?.songs[2], 'Who’s Afraid of Little Old Me?');
+  assert.deepEqual(tour?.albumIds, []);
+  assert.deepEqual(tour?.setlists.map((setlist) => setlist.label), ['2023.3-2024.3', '2024.5-2024.12']);
+  assert.equal(tour?.setlists[0]?.songs[0], 'Miss Americana & The Heartbreak Prince');
+  assert.equal(tour?.setlists[1]?.songs.includes("Who's Afraid of Little Old Me?"), true);
+  assert.equal('id' in (tour?.setlists[0] ?? {}), false);
 });
 
 test('getShowById returns country, surprise guests, and surprise songs', () => {
@@ -152,9 +163,9 @@ test('getShowStatusText maps all four show states', () => {
 test('getTourStatusText maps all three tour states', () => {
   assert.deepEqual(
     {
-      ongoing: getTourStatusText('ongoing'),
-      ended: getTourStatusText('ended'),
-      break: getTourStatusText('break')
+      ongoing: getTourStatusText(TOUR_STATUS.ONGOING),
+      ended: getTourStatusText(TOUR_STATUS.ENDED),
+      break: getTourStatusText(TOUR_STATUS.BREAK)
     },
     {
       ongoing: '进行中',
@@ -179,7 +190,7 @@ test('isShowClickable returns false only for cancelled shows', () => {
 });
 
 test('getTourShowGroupsByTourId groups shows by country then city', () => {
-  const groups = getTourShowGroupsByTourId('tour_eras');
+  const groups = getTourShowGroupsByTourId(TOUR_IDS.eras);
 
   assert.equal(groups.length, 3);
   assert.equal(groups[0]?.country, 'Japan');
@@ -212,16 +223,22 @@ test('getTourShowGroupsByTourId groups shows by country then city', () => {
 test('getActiveTour returns the single ongoing tour', () => {
   const tour = getActiveTour();
 
-  assert.equal(tour?.id, 'tour_eras');
-  assert.equal(tour?.status, 'ongoing');
+  assert.equal(tour?.id, TOUR_IDS.eras);
+  assert.equal(tour?.status, TOUR_STATUS.ONGOING);
 });
 
-test('getTimelineTours returns only ended tours sorted by year desc', () => {
+test('getTimelineTours returns only ended tours sorted by start date desc', () => {
   const timelineTours = getTimelineTours();
 
   assert.deepEqual(
     timelineTours.map((tour) => tour.id),
-    ['tour_reputation', 'tour_1989']
+    [
+      TOUR_IDS.reputation,
+      TOUR_IDS.the1989,
+      TOUR_IDS.red,
+      TOUR_IDS.speakNow,
+      TOUR_IDS.fearless
+    ]
   );
 });
 
@@ -243,4 +260,11 @@ test('tour detail template no longer renders rangeLabel', () => {
   const template = readFileSync(new URL('../pages/tour/detail/index.wxml', import.meta.url), 'utf8');
 
   assert.doesNotMatch(template, /tour\.rangeLabel/);
+});
+
+test('tour index template no longer renders timeline year labels', () => {
+  const template = readFileSync(new URL('../pages/tour/index.wxml', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(template, /timeline-year/);
+  assert.doesNotMatch(template, /timelineLabel/);
 });

@@ -30,7 +30,7 @@
     <view class="card">
       <text class="section-title">官方 setlist</text>
       <view wx:if="{{tour.setlists.length}}" class="setlist-list">
-        <view wx:for="{{tour.setlists}}" wx:key="id" wx:for-item="setlist" class="setlist-block">
+        <view wx:for="{{tour.setlists}}" wx:key="label" wx:for-item="setlist" class="setlist-block">
           <text class="setlist-label">{{setlist.label}}</text>
           <view class="setlist-song-list">
             <view wx:for="{{setlist.songs}}" wx:key="index" wx:for-item="song" class="setlist-song-item">

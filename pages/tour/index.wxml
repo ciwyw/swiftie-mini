@@ -28,7 +28,6 @@
       bindtap="goDetail"
     >
       <view class="timeline-rail">
-        <text class="timeline-year">{{item.timelineLabel}}</text>
         <view class="timeline-dot"></view>
         <view class="timeline-line" wx:if="{{index !== timelineTours.length - 1}}"></view>
       </view>

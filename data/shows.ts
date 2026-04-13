@@ -1,4 +1,5 @@
 import { Show } from '../types/tour';
+import { TOUR_IDS } from './tours';
 
 function localDayTimestamp(year: number, month: number, day: number): number {
   return new Date(year, month - 1, day).getTime();
@@ -7,7 +8,7 @@ function localDayTimestamp(year: number, month: number, day: number): number {
 export const shows: Show[] = [
   {
     id: 'show_tokyo_n1',
-    tourId: 'tour_eras',
+    tourId: TOUR_IDS.eras,
     country: 'Japan',
     city: 'Tokyo',
     venue: 'Tokyo Dome',
@@ -20,7 +21,7 @@ export const shows: Show[] = [
   },
   {
     id: 'show_singapore_n1',
-    tourId: 'tour_eras',
+    tourId: TOUR_IDS.eras,
     country: 'Singapore',
     city: 'Singapore',
     venue: 'National Stadium',
@@ -38,7 +39,7 @@ export const shows: Show[] = [
   },
   {
     id: 'show_toronto_cancelled',
-    tourId: 'tour_eras',
+    tourId: TOUR_IDS.eras,
     country: 'Canada',
     city: 'Toronto',
     venue: 'Rogers Centre',
@@ -47,7 +48,7 @@ export const shows: Show[] = [
   },
   {
     id: 'show_vancouver_n1',
-    tourId: 'tour_eras',
+    tourId: TOUR_IDS.eras,
     country: 'Canada',
     city: 'Vancouver',
     venue: 'BC Place',
@@ -65,7 +66,7 @@ export const shows: Show[] = [
   },
   {
     id: 'show_arlington_n1',
-    tourId: 'tour_reputation',
+    tourId: TOUR_IDS.reputation,
     country: 'United States',
     city: 'Arlington',
     venue: 'AT&T Stadium',

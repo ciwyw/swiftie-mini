@@ -1,8 +1,13 @@
-export type TourStatus = 'ongoing' | 'ended' | 'break';
+export const TOUR_STATUS = {
+  BREAK: 0,
+  ONGOING: 1,
+  ENDED: 2
+} as const;
+
+export type TourStatus = (typeof TOUR_STATUS)[keyof typeof TOUR_STATUS];
 export type ShowStatus = 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
 
 export interface TourSetlistVersion {
-  id: string;
   label: string;
   songs: string[];
 }
@@ -10,13 +15,13 @@ export interface TourSetlistVersion {
 export interface Tour {
   id: string;
   name: string;
-  year: number;
   status: TourStatus;
   cover: string;
   description: string;
   announcementAt?: number;
   startAt: number;
   endAt: number;
+  albumIds?: string[];
   setlists: TourSetlistVersion[];
 }
 

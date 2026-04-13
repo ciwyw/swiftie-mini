@@ -89,13 +89,13 @@ interface DocumentaryRecord {
 interface TourRecord {
   id: string;
   name: string;
-  year: number;
-  status: 'ongoing' | 'ended' | 'break';
+  status: 0 | 1 | 2;
   cover: string;
   description: string;
   announcement_at: number | null;
   start_at: number;
   end_at: number;
+  album_ids_json: string | null;
   setlists_json: string;
 }
 
@@ -409,13 +409,13 @@ function mapTour(record: TourRecord) {
   return {
     id: record.id,
     name: record.name,
-    year: record.year,
     status: record.status,
     cover: record.cover,
     description: record.description,
     announcementAt: record.announcement_at ?? undefined,
     startAt: record.start_at,
     endAt: record.end_at,
+    albumIds: parseJsonArray<string>(record.album_ids_json),
     setlists: parseJsonArray(record.setlists_json)
   };
 }
@@ -455,7 +455,7 @@ function mapVideo(record: VideoRecord) {
 async function handleHome(db: D1DatabaseLike): Promise<Response> {
   const [albums, tours, eras, news] = await Promise.all([
     queryAll<AlbumRecord>(db, 'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'),
-    queryAll<TourRecord>(db, 'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
+    queryAll<TourRecord>(db, 'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
     queryAll<EraRecord>(db, 'SELECT id, album_id, era_name, cover, theme_color, tagline, hero_intro, signature_looks_json, milestones_json, era_honors_json, revisit_performance_ids_json FROM eras ORDER BY rowid ASC'),
     queryAll<NewsRecord>(db, 'SELECT id, title, published_at, summary, tag, action_type, action_route, action_query FROM news_items ORDER BY published_at DESC, id ASC LIMIT 3')
   ]);
@@ -568,7 +568,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (tourMatch) {
     const record = await queryFirst<TourRecord>(
       env.DB,
-      'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours WHERE id = ?',
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours WHERE id = ?',
       tourMatch[1]
     );
     return success(record ? mapTour(record) : null);
@@ -577,7 +577,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/tours') {
     const rows = await queryAll<TourRecord>(
       env.DB,
-      'SELECT id, name, year, status, cover, description, announcement_at, start_at, end_at, setlists_json FROM tours ORDER BY year DESC, id ASC'
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'
     );
     return success(rows.map(mapTour));
   }

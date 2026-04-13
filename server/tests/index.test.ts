@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../src/index';
 
+const TOUR_IDS = {
+  eras: '48291357'
+} as const;
+
 interface QueryResult<T = Record<string, unknown>> {
   results: T[];
 }
@@ -79,7 +83,7 @@ test('list endpoints return empty arrays when the database is empty', async () =
     '/performances',
     '/documentaries',
     '/tours',
-    '/tours/tour_eras/shows',
+    `/tours/${TOUR_IDS.eras}/shows`,
     '/shows/show_tokyo_n1/videos'
   ];
 
@@ -95,7 +99,7 @@ test('detail endpoints return null when the database is empty', async () => {
     '/albums/album_midnights',
     '/songs/song_anti_hero',
     '/eras/era_midnights',
-    '/tours/tour_eras',
+    `/tours/${TOUR_IDS.eras}`,
     '/shows/show_tokyo_n1'
   ];
 

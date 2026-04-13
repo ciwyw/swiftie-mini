@@ -14,6 +14,7 @@ import {
   SurpriseSong,
   Tour,
   TourSetlistVersion,
+  TOUR_STATUS,
   TourStatus,
   TourProgress,
   Video
@@ -45,9 +46,9 @@ const SHOW_STATUS_TEXT: Record<ShowStatus, string> = {
 };
 
 const TOUR_STATUS_TEXT: Record<TourStatus, string> = {
-  ongoing: '进行中',
-  ended: '已结束',
-  break: '空档期'
+  [TOUR_STATUS.ONGOING]: '进行中',
+  [TOUR_STATUS.ENDED]: '已结束',
+  [TOUR_STATUS.BREAK]: '空档期'
 };
 
 function formatDay(timestamp: number): string {
@@ -60,7 +61,6 @@ function formatDay(timestamp: number): string {
 
 function cloneTourSetlist(setlist: TourSetlistVersion): TourSetlistVersion {
   return {
-    id: setlist.id,
     label: setlist.label,
     songs: [...setlist.songs]
   };
@@ -69,6 +69,7 @@ function cloneTourSetlist(setlist: TourSetlistVersion): TourSetlistVersion {
 function cloneTour(tour: Tour): Tour {
   return {
     ...tour,
+    albumIds: tour.albumIds ? [...tour.albumIds] : undefined,
     setlists: tour.setlists.map(cloneTourSetlist)
   };
 }
@@ -110,14 +111,14 @@ export function getSongs(): Song[] {
 }
 
 export function getActiveTour(): Tour | undefined {
-  const tour = tours.find((item) => item.status === 'ongoing');
+  const tour = tours.find((item) => item.status === TOUR_STATUS.ONGOING);
   return tour ? cloneTour(tour) : undefined;
 }
 
 export function getTimelineTours(): Tour[] {
   return tours
-    .filter((tour) => tour.status === 'ended')
-    .sort((a, b) => b.year - a.year)
+    .filter((tour) => tour.status === TOUR_STATUS.ENDED)
+    .sort((a, b) => b.startAt - a.startAt)
     .map(cloneTour);
 }
 

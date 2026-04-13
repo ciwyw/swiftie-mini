@@ -1,5 +1,6 @@
 import { ROUTES } from '../utils/constants';
 import { NewsItem } from '../types/news';
+import { TOUR_IDS } from './tours';
 
 function localDayTimestamp(year: number, month: number, day: number): number {
   return new Date(year, month - 1, day).getTime();
@@ -15,7 +16,7 @@ export const newsItems: NewsItem[] = [
     action: {
       type: 'navigateTo',
       route: ROUTES.tourDetail,
-      query: 'id=tour_eras'
+      query: `id=${TOUR_IDS.eras}`
     }
   },
   {

@@ -12,6 +12,10 @@ import {
   getHomeNews
 } from '../utils/homeSelectors';
 
+const TOUR_IDS = {
+  eras: '48291357'
+} as const;
+
 function getLocalDayTimestamp(year: number, month: number, day: number) {
   return new Date(year, month - 1, day).getTime();
 }
@@ -67,9 +71,9 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
     }
   });
   assert.deepEqual(feed.spotlights[1], {
-    id: 'spotlight_tour_eras_tour_ongoing',
+    id: `spotlight_${TOUR_IDS.eras}_tour_ongoing`,
     type: HomeSpotlightType.TourOngoing,
-    entityId: 'tour_eras',
+    entityId: TOUR_IDS.eras,
     name: 'The Eras Tour',
     cover: '/assets/images/ui/avatar-placeholder.png',
     startAt: getLocalDayTimestamp(2026, 3, 1),
@@ -77,7 +81,7 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
     action: {
       type: 'navigateTo',
       route: ROUTES.tourDetail,
-      query: 'id=tour_eras'
+      query: `id=${TOUR_IDS.eras}`
     }
   });
   assert.equal(feed.eras.length, 7);
@@ -85,7 +89,7 @@ test('home feed returns ordered semantic spotlights with action wiring and seman
   assert.equal(feed.news[0]?.id, 'news_1');
   assert.equal(typeof feed.news[0]?.publishedAt, 'number');
   assert.equal(feed.news[0]?.action.route, ROUTES.tourDetail);
-  assert.equal(feed.news[0]?.action.query, 'id=tour_eras');
+  assert.equal(feed.news[0]?.action.query, `id=${TOUR_IDS.eras}`);
 });
 
 test('home feed honors announcement day and tour start day boundaries', () => {
@@ -101,12 +105,12 @@ test('home feed honors announcement day and tour start day boundaries', () => {
   assert.equal(feed.spotlights[0]?.endAt, getLocalDayTimestamp(2026, 4, 29));
   assert.equal(feed.spotlights[0]?.action.route, ROUTES.album);
   assert.equal(feed.spotlights[0]?.action.query, 'id=album_midnights');
-  assert.equal(feed.spotlights[1]?.entityId, 'tour_eras');
+  assert.equal(feed.spotlights[1]?.entityId, TOUR_IDS.eras);
   assert.equal(feed.spotlights[1]?.cover, '/assets/images/ui/avatar-placeholder.png');
   assert.equal(feed.spotlights[1]?.startAt, getLocalDayTimestamp(2026, 3, 1));
   assert.equal(feed.spotlights[1]?.endAt, getLocalDayTimestamp(2026, 8, 30));
   assert.equal(feed.spotlights[1]?.action.route, ROUTES.tourDetail);
-  assert.equal(feed.spotlights[1]?.action.query, 'id=tour_eras');
+  assert.equal(feed.spotlights[1]?.action.query, `id=${TOUR_IDS.eras}`);
 });
 
 test('home feed honors release day, release-week end, and the day after release week', () => {
@@ -194,7 +198,7 @@ test('home feed honors tour end day and turns empty after the active windows pas
   assert.deepEqual(tourEndDay.spotlights.map((item) => item.type), [
     HomeSpotlightType.TourOngoing
   ]);
-  assert.equal(tourEndDay.spotlights[0]?.entityId, 'tour_eras');
+  assert.equal(tourEndDay.spotlights[0]?.entityId, TOUR_IDS.eras);
   assert.equal(inactiveDay.spotlights.length, 0);
 });
 
@@ -364,7 +368,7 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
         action: {
           type: 'navigateTo',
           route: ROUTES.tourDetail,
-          query: 'id=tour_eras'
+          query: `id=${TOUR_IDS.eras}`
         }
       }
     ]
@@ -465,7 +469,7 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
         dataset: {
           type: 'navigateTo',
           route: ROUTES.guide,
-          query: 'tourId=tour_eras'
+          query: `tourId=${TOUR_IDS.eras}`
         }
       }
     });
@@ -478,7 +482,7 @@ test('home page refreshes spotlight cards with mapped display copy and goAction 
       }
     });
 
-    assert.deepEqual(navigateToCalls, [{ url: `${ROUTES.guide}?tourId=tour_eras` }]);
+    assert.deepEqual(navigateToCalls, [{ url: `${ROUTES.guide}?tourId=${TOUR_IDS.eras}` }]);
     assert.deepEqual(switchTabCalls, [{ url: ROUTES.tour }]);
   } finally {
     delete (globalThis as { Page?: unknown }).Page;
