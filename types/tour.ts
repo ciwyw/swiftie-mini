@@ -21,6 +21,8 @@ export interface Tour {
   announcementAt?: number;
   startAt: number;
   endAt: number;
+  total: number;
+  cancelled: number;
   albumIds?: string[];
   setlists: TourSetlistVersion[];
 }
@@ -33,6 +35,7 @@ export interface Show {
   venue: string;
   startAt: number;
   status: ShowStatus;
+  openingAct?: string;
   ticketPlatform?: string;
   saleAt?: number;
   entryTime?: string;
@@ -54,7 +57,7 @@ export interface Video {
 }
 
 export interface SurpriseSong {
-  songId: string;
+  songId?: string;
   name: string;
 }
 

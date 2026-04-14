@@ -187,7 +187,7 @@ test('song and album endpoints prefix image asset paths in response payloads', a
 test('server also prefixes non-assets relative image paths from content data', async () => {
   const env = {
     DB: new QueryMapDb({
-      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours WHERE id = ?': {
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours WHERE id = ?': {
         id: TOUR_IDS.eras,
         name: 'The Eras Tour',
         status: 1,
@@ -196,6 +196,8 @@ test('server also prefixes non-assets relative image paths from content data', a
         announcement_at: null,
         start_at: 1772294400000,
         end_at: 1788019200000,
+        total: 0,
+        cancelled: 0,
         album_ids_json: '[]',
         setlists_json: '[]'
       }
@@ -214,8 +216,126 @@ test('server also prefixes non-assets relative image paths from content data', a
       description: 'tour image path should resolve to CDN',
       startAt: 1772294400000,
       endAt: 1788019200000,
+      total: 0,
+      cancelled: 0,
       albumIds: [],
       setlists: []
     }
   });
+});
+
+test('tour endpoints expose total and cancelled counts', async () => {
+  const tourRecord = {
+    id: TOUR_IDS.eras,
+    name: 'The Eras Tour',
+    status: 1,
+    cover: '/tours/eras.jpg',
+    description: 'tour stats should be exposed',
+    announcement_at: null,
+    start_at: 1772294400000,
+    end_at: 1788019200000,
+    total: 152,
+    cancelled: 3,
+    album_ids_json: '[]',
+    setlists_json: '[]'
+  };
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours WHERE id = ?': tourRecord,
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC': {
+        results: [tourRecord]
+      }
+    })
+  };
+
+  const detailResult = await requestJson(`/tours/${TOUR_IDS.eras}`, env);
+  const listResult = await requestJson('/tours', env);
+
+  assert.deepEqual(detailResult.body, {
+    code: 0,
+    data: {
+      id: TOUR_IDS.eras,
+      name: 'The Eras Tour',
+      status: 1,
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/tours/eras.jpg',
+      description: 'tour stats should be exposed',
+      startAt: 1772294400000,
+      endAt: 1788019200000,
+      total: 152,
+      cancelled: 3,
+      albumIds: [],
+      setlists: []
+    }
+  });
+  assert.deepEqual(listResult.body, {
+    code: 0,
+    data: [
+      {
+        id: TOUR_IDS.eras,
+        name: 'The Eras Tour',
+        status: 1,
+        cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/tours/eras.jpg',
+        description: 'tour stats should be exposed',
+        startAt: 1772294400000,
+        endAt: 1788019200000,
+        total: 152,
+        cancelled: 3,
+        albumIds: [],
+        setlists: []
+      }
+    ]
+  });
+});
+
+test('show endpoints expose opening acts and normalize surprise songs without song ids', async () => {
+  const showRecord = {
+    id: 'show_glendale_n1',
+    tour_id: TOUR_IDS.eras,
+    country: 'United States',
+    city: 'Glendale',
+    venue: 'State Farm Stadium',
+    start_at: 1679011200000,
+    status: 'ended',
+    opening_act: 'Paramore / Gayle',
+    ticket_platform: null,
+    sale_at: null,
+    entry_time: null,
+    address: null,
+    seat_map_images_json: null,
+    notes_json: null,
+    surprise_guests_json: null,
+    surprise_songs_json: JSON.stringify(['Mirrorball', 'Tim McGraw'])
+  };
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, tour_id, country, city, venue, start_at, status, opening_act, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE id = ?': showRecord,
+      'SELECT id, tour_id, country, city, venue, start_at, status, opening_act, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE tour_id = ? ORDER BY start_at ASC, id ASC': {
+        results: [showRecord]
+      }
+    })
+  };
+
+  const detailResult = await requestJson('/shows/show_glendale_n1', env);
+  const listResult = await requestJson(`/tours/${TOUR_IDS.eras}/shows`, env);
+
+  const expectedShow = {
+    id: 'show_glendale_n1',
+    tourId: TOUR_IDS.eras,
+    country: 'United States',
+    city: 'Glendale',
+    venue: 'State Farm Stadium',
+    startAt: 1679011200000,
+    status: 'ended',
+    openingAct: 'Paramore / Gayle',
+    seatMapImages: [],
+    notes: [],
+    surpriseGuests: [],
+    surpriseSongs: [
+      { name: 'Mirrorball' },
+      { name: 'Tim McGraw' }
+    ]
+  };
+
+  assert.deepEqual(detailResult.body, { code: 0, data: expectedShow });
+  assert.deepEqual(listResult.body, { code: 0, data: [expectedShow] });
 });

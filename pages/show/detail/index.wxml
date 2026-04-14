@@ -39,6 +39,10 @@
           <text class="info-label">巡演</text>
           <text class="info-value">{{tourName}}</text>
         </view>
+        <view wx:if="{{show.openingAct}}" class="info-row">
+          <text class="info-label">暖场嘉宾</text>
+          <text class="info-value">{{show.openingAct}}</text>
+        </view>
       </view>
 
       <view wx:if="{{show.surpriseGuests && show.surpriseGuests.length}}" class="guest-block">
@@ -104,9 +108,9 @@
       <text class="section-title">Surprise Songs</text>
       <view
         wx:for="{{show.surpriseSongs}}"
-        wx:key="songId"
+        wx:key="name"
         class="song-link"
-        data-id="{{item.songId}}"
+        data-id="{{item.songId || ''}}"
         bindtap="goSong"
       >
         <text class="song-link-text">{{item.name}}</text>

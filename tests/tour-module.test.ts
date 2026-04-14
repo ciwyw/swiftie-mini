@@ -85,6 +85,8 @@ test('tour index page loads active and timeline tours from remote interfaces', a
               description: 'ongoing',
               startAt: Date.UTC(2026, 2, 1),
               endAt: Date.UTC(2026, 7, 30),
+              total: 152,
+              cancelled: 3,
               albumIds: [],
               setlists: []
             },
@@ -96,6 +98,8 @@ test('tour index page loads active and timeline tours from remote interfaces', a
               description: 'ended',
               startAt: Date.UTC(2018, 4, 8),
               endAt: Date.UTC(2018, 10, 21),
+              total: 53,
+              cancelled: 0,
               albumIds: [],
               setlists: []
             }

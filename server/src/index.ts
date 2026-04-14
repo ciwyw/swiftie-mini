@@ -95,6 +95,8 @@ interface TourRecord {
   announcement_at: number | null;
   start_at: number;
   end_at: number;
+  total: number;
+  cancelled: number;
   album_ids_json: string | null;
   setlists_json: string;
 }
@@ -107,6 +109,7 @@ interface ShowRecord {
   venue: string;
   start_at: number;
   status: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
+  opening_act: string | null;
   ticket_platform: string | null;
   sale_at: number | null;
   entry_time: string | null;
@@ -251,6 +254,27 @@ function parseJsonObject<T>(value: string | null): T | null {
   }
 
   return JSON.parse(value) as T;
+}
+
+function mapSurpriseSongs(value: string | null) {
+  const items = parseJsonArray<unknown>(value);
+
+  return items.flatMap((item) => {
+    if (typeof item === 'string') {
+      return item ? [{ name: item }] : [];
+    }
+
+    if (!isPlainObject(item) || typeof item.name !== 'string' || !item.name) {
+      return [];
+    }
+
+    return [
+      {
+        name: item.name,
+        songId: typeof item.songId === 'string' && item.songId ? item.songId : undefined
+      }
+    ];
+  });
 }
 
 function createAction(route: string, query?: string): HomeAction {
@@ -460,6 +484,8 @@ function mapTour(record: TourRecord) {
     announcementAt: record.announcement_at ?? undefined,
     startAt: record.start_at,
     endAt: record.end_at,
+    total: record.total,
+    cancelled: record.cancelled,
     albumIds: parseJsonArray<string>(record.album_ids_json),
     setlists: parseJsonArray(record.setlists_json)
   };
@@ -474,6 +500,7 @@ function mapShow(record: ShowRecord) {
     venue: record.venue,
     startAt: record.start_at,
     status: record.status,
+    openingAct: record.opening_act ?? undefined,
     ticketPlatform: record.ticket_platform ?? undefined,
     saleAt: record.sale_at ?? undefined,
     entryTime: record.entry_time ?? undefined,
@@ -481,7 +508,7 @@ function mapShow(record: ShowRecord) {
     seatMapImages: parseJsonArray<string>(record.seat_map_images_json),
     notes: parseJsonArray<string>(record.notes_json),
     surpriseGuests: parseJsonArray(record.surprise_guests_json),
-    surpriseSongs: parseJsonArray(record.surprise_songs_json)
+    surpriseSongs: mapSurpriseSongs(record.surprise_songs_json)
   };
 }
 
@@ -500,7 +527,7 @@ function mapVideo(record: VideoRecord) {
 async function handleHome(db: D1DatabaseLike): Promise<Response> {
   const [albums, tours, eras, news] = await Promise.all([
     queryAll<AlbumRecord>(db, 'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'),
-    queryAll<TourRecord>(db, 'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
+    queryAll<TourRecord>(db, 'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
     queryAll<EraRecord>(db, 'SELECT id, album_id, era_name, cover, theme_color, tagline, hero_intro, signature_looks_json, milestones_json, era_honors_json, revisit_performance_ids_json FROM eras ORDER BY rowid ASC'),
     queryAll<NewsRecord>(db, 'SELECT id, title, published_at, summary, tag, action_type, action_route, action_query FROM news_items ORDER BY published_at DESC, id ASC LIMIT 3')
   ]);
@@ -611,7 +638,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (tourShowsMatch) {
     const rows = await queryAll<ShowRecord>(
       env.DB,
-      'SELECT id, tour_id, country, city, venue, start_at, status, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE tour_id = ? ORDER BY start_at ASC, id ASC',
+      'SELECT id, tour_id, country, city, venue, start_at, status, opening_act, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE tour_id = ? ORDER BY start_at ASC, id ASC',
       tourShowsMatch[1]
     );
     return success(rows.map(mapShow));
@@ -621,7 +648,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (tourMatch) {
     const record = await queryFirst<TourRecord>(
       env.DB,
-      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours WHERE id = ?',
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours WHERE id = ?',
       tourMatch[1]
     );
     return success(record ? mapTour(record) : null);
@@ -630,7 +657,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/tours') {
     const rows = await queryAll<TourRecord>(
       env.DB,
-      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'
     );
     return success(rows.map(mapTour));
   }
@@ -649,7 +676,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (showMatch) {
     const record = await queryFirst<ShowRecord>(
       env.DB,
-      'SELECT id, tour_id, country, city, venue, start_at, status, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE id = ?',
+      'SELECT id, tour_id, country, city, venue, start_at, status, opening_act, ticket_platform, sale_at, entry_time, address, seat_map_images_json, notes_json, surprise_guests_json, surprise_songs_json FROM shows WHERE id = ?',
       showMatch[1]
     );
     return success(record ? mapShow(record) : null);

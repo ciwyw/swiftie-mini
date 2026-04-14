@@ -159,8 +159,14 @@ Page({
     this.setData(buildSeatMapState(this.data.show, nextIndex));
   },
 
-  goSong(event: { currentTarget: { dataset: { id: string } } }) {
-    wx.navigateTo({ url: `${ROUTES.song}?id=${event.currentTarget.dataset.id}` });
+  goSong(event: { currentTarget: { dataset: { id?: string } } }) {
+    const songId = event.currentTarget.dataset.id ?? '';
+
+    if (!songId) {
+      return;
+    }
+
+    wx.navigateTo({ url: `${ROUTES.song}?id=${songId}` });
   },
 
   openUpload() {
