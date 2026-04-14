@@ -1,14 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  getFavoriteSongListItems,
-  getLibraryHubEntries,
-  getPerformanceList,
-  getSongListItems,
-  getSongVideoSection
-} from '../utils/librarySelectors';
+import { readFileSync } from 'node:fs';
+import { clearContentStoreCache } from '../services/contentStore';
 import { ROUTES } from '../utils/constants';
-import { performances } from '../data/performances';
 
 const storage = new Map<string, unknown>();
 
@@ -24,22 +18,41 @@ const storage = new Map<string, unknown>();
   }
 };
 
-test('library hub exposes the five primary destinations in product order', () => {
-  const entries = getLibraryHubEntries();
+test('library page exposes the five primary destinations in product order', async () => {
+  type LibraryPageConfig = {
+    data: {
+      entries: Array<{ id: string; route: string }>;
+    };
+    setData: (patch: Partial<LibraryPageConfig['data']>) => void;
+    onLoad: () => void;
+    goEntry: (event: { currentTarget: { dataset: { route: string } } }) => void;
+  };
 
+  let pageConfig: LibraryPageConfig | undefined;
+  const navigateToCalls: Array<{ url: string }> = [];
+  (globalThis as typeof globalThis & { Page?: unknown }).Page = ((config: LibraryPageConfig) => {
+    pageConfig = config;
+  }) as unknown as typeof Page;
+  (globalThis as typeof globalThis & { wx?: typeof wx }).wx = {
+    ...(globalThis as unknown as { wx: typeof wx }).wx,
+    navigateTo(options: { url: string }) {
+      navigateToCalls.push(options);
+    }
+  };
+
+  await import(new URL('../pages/library/index.ts?library-page-test', import.meta.url).href);
+
+  assert.ok(pageConfig);
+  pageConfig.setData = function setData(patch) {
+    this.data = { ...this.data, ...patch };
+  };
+  pageConfig.onLoad.call(pageConfig);
   assert.deepEqual(
-    entries.map((entry) => entry.id),
+    pageConfig.data.entries.map((entry) => entry.id),
     ['albums', 'songs', 'performances', 'documentaries', 'favorites']
   );
-  assert.equal(entries[1]?.route, ROUTES.songList);
-  assert.equal(entries[4]?.route, ROUTES.favorites);
-});
-
-test('library hub entry routes map to dedicated non-tab pages', () => {
-  const entries = getLibraryHubEntries();
-
   assert.deepEqual(
-    entries.map((entry) => entry.route),
+    pageConfig.data.entries.map((entry) => entry.route),
     [
       ROUTES.album,
       ROUTES.songList,
@@ -48,105 +61,204 @@ test('library hub entry routes map to dedicated non-tab pages', () => {
       ROUTES.favorites
     ]
   );
+
+  pageConfig.goEntry({ currentTarget: { dataset: { route: ROUTES.songList } } });
+  assert.deepEqual(navigateToCalls, [{ url: ROUTES.songList }]);
 });
 
-test('song list items expose album names and mv availability', () => {
-  const song = getSongListItems().find((item) => item.id === 'song_anti_hero');
-
-  assert.equal(song?.albumName, 'Midnights');
-  assert.equal(song?.hasMv, true);
-});
-
-test('song list items resolve remapped album labels', () => {
-  const items = getSongListItems();
-
-  assert.equal(items.find((item) => item.id === 'song_tim_mcgraw')?.albumName, 'Taylor Swift');
-  assert.equal(items.find((item) => item.id === 'song_mirrorball')?.albumName, 'folklore');
-  assert.equal(items.find((item) => item.id === 'song_long_live')?.albumName, 'Speak Now');
-  assert.equal(items.find((item) => item.id === 'song_new_romantics')?.albumName, '1989');
-});
-
-test('song video section returns mv plus related non-tour performances only', () => {
-  const section = getSongVideoSection('song_all_too_well');
-
-  assert.equal(section.mv?.title, 'All Too Well: The Short Film');
-  assert.deepEqual(
-    section.performances.map((item) => item.eventName),
-    ['Grammy Awards']
-  );
-});
-
-test('song video section hides mv when the song has no video asset', () => {
-  const section = getSongVideoSection('song_love_story');
-
-  assert.equal(section.mv, null);
-  assert.deepEqual(section.performances, []);
-});
-
-test('performance selectors honor the explicit library domain contract', () => {
-  const tourPerformance = {
-    id: 'performance_tour_fan_cam',
-    title: 'All Too Well',
-    songIds: ['song_all_too_well'],
-    kind: 'live' as const,
-    domain: 'tour' as const,
-    eventName: 'Eras Tour',
-    year: 2024,
-    cover: '/assets/images/ui/avatar-placeholder.png',
-    source: 'Fan Cam',
-    duration: '10:00',
-    summary: 'A tour recording that should stay out of the library selectors.'
+test('song list page loads songs from remote interfaces and maps album names with mv flags', async () => {
+  type SongListPageConfig = {
+    data: {
+      songs: Array<{ id: string; albumName: string; hasMv: boolean }>;
+      isLoading: boolean;
+      loadError: boolean;
+    };
+    setData: (patch: Partial<SongListPageConfig['data']>) => void;
+    onLoad: () => void | Promise<void>;
+    retryLoad: () => Promise<void>;
   };
 
-  performances.push(tourPerformance);
+  let pageConfig: SongListPageConfig | undefined;
+  const requestUrls: string[] = [];
+  clearContentStoreCache();
 
-  try {
-    const performanceIds = getPerformanceList().map((item) => item.id);
+  (globalThis as typeof globalThis & { Page?: unknown }).Page = ((config: SongListPageConfig) => {
+    pageConfig = config;
+  }) as unknown as typeof Page;
+  (globalThis as typeof globalThis & { wx?: unknown }).wx = {
+    ...(globalThis as unknown as { wx: typeof wx }).wx,
+    request(options: {
+      url: string;
+      success: (result: { statusCode: number; data: unknown }) => void;
+      fail: (error: Error) => void;
+    }) {
+      requestUrls.push(options.url);
+      if (options.url.endsWith('/songs')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              {
+                id: 'song_anti_hero',
+                name: 'Anti-Hero',
+                albumId: 'album_midnights',
+                lyrics: [],
+                mv: {
+                  title: 'Anti-Hero (Official Music Video)',
+                  cover: 'https://cdn.example/anti-hero.png',
+                  source: 'YouTube',
+                  duration: '5:10'
+                }
+              },
+              {
+                id: 'song_tim_mcgraw',
+                name: 'Tim McGraw',
+                albumId: 'album_taylor_swift',
+                lyrics: []
+              }
+            ]
+          }
+        });
+        return;
+      }
 
-    assert.deepEqual(performanceIds, [
-      'performance_grammys_all_too_well',
-      'performance_iheart_anti_hero',
-      'performance_bbc_holy_ground'
-    ]);
-    assert.ok(getPerformanceList().every((item) => item.domain === 'library'));
-    assert.ok(getPerformanceList().every((item) => item.kind === 'live'));
-    assert.deepEqual(getSongVideoSection('song_all_too_well').performances.map((item) => item.id), [
-      'performance_grammys_all_too_well'
-    ]);
-  } finally {
-    performances.pop();
-  }
+      if (options.url.endsWith('/albums')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              { id: 'album_midnights', name: 'Midnights', year: 2022, cover: 'https://cdn.example/midnights.png' },
+              { id: 'album_taylor_swift', name: 'Taylor Swift', year: 2006, cover: 'https://cdn.example/debut.png' }
+            ]
+          }
+        });
+        return;
+      }
+
+      options.fail(new Error(`Unhandled request: ${options.url}`));
+    }
+  } as unknown as typeof wx;
+
+  await import(new URL('../pages/song-list/index.ts?song-list-page-test', import.meta.url).href);
+
+  assert.ok(pageConfig);
+  pageConfig.setData = function setData(patch) {
+    this.data = { ...this.data, ...patch };
+  };
+  await pageConfig.onLoad.call(pageConfig);
+
+  assert.deepEqual(requestUrls.map((url) => url.replace(/^https?:\/\/[^/]+/, '')), ['/songs', '/albums']);
+  assert.deepEqual(pageConfig.data.songs.map((item) => ({
+    id: item.id,
+    albumName: item.albumName,
+    hasMv: item.hasMv
+  })), [
+    {
+      id: 'song_anti_hero',
+      albumName: 'Midnights',
+      hasMv: true
+    },
+    {
+      id: 'song_tim_mcgraw',
+      albumName: 'Taylor Swift',
+      hasMv: false
+    }
+  ]);
+  assert.equal(pageConfig.data.isLoading, false);
+  assert.equal(pageConfig.data.loadError, false);
 });
 
-test('revisit-only special and interview records stay out of generic live surfaces', () => {
-  assert.equal(performances.find((item) => item.id === 'performance_long_pond_session')?.kind, 'special');
-  assert.equal(
-    performances.find((item) => item.id === 'performance_midnights_release_interview')?.kind,
-    'interview'
-  );
-  assert.ok(getPerformanceList().every((item) => item.id !== 'performance_long_pond_session'));
-  assert.ok(
-    getPerformanceList().every((item) => item.id !== 'performance_midnights_release_interview')
-  );
-  assert.ok(
-    getSongVideoSection('song_anti_hero').performances.every(
-      (item) => item.id !== 'performance_midnights_release_interview'
-    )
-  );
+test('favorites page loads remote songs and keeps local favorite order', async () => {
+  type FavoritesPageConfig = {
+    data: {
+      favorites: Array<{ id: string; albumName: string; hasMv: boolean }>;
+      isLoading: boolean;
+      loadError: boolean;
+    };
+    setData: (patch: Partial<FavoritesPageConfig['data']>) => void;
+    onShow: () => void | Promise<void>;
+  };
+
+  let pageConfig: FavoritesPageConfig | undefined;
+  storage.set('favoriteSongIds', ['song_all_too_well', 'song_anti_hero']);
+  clearContentStoreCache();
+
+  (globalThis as typeof globalThis & { Page?: unknown }).Page = ((config: FavoritesPageConfig) => {
+    pageConfig = config;
+  }) as unknown as typeof Page;
+  (globalThis as typeof globalThis & { wx?: unknown }).wx = {
+    ...(globalThis as unknown as { wx: typeof wx }).wx,
+    request(options: {
+      url: string;
+      success: (result: { statusCode: number; data: unknown }) => void;
+      fail: (error: Error) => void;
+    }) {
+      if (options.url.endsWith('/songs')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              { id: 'song_anti_hero', name: 'Anti-Hero', albumId: 'album_midnights', lyrics: [], mv: { title: 'Anti-Hero', cover: 'https://cdn.example/anti-hero.png', source: 'YouTube', duration: '5:10' } },
+              { id: 'song_all_too_well', name: 'All Too Well', albumId: 'album_red', lyrics: [], mv: { title: 'All Too Well', cover: 'https://cdn.example/atw.png', source: 'YouTube', duration: '14:56' } }
+            ]
+          }
+        });
+        return;
+      }
+
+      if (options.url.endsWith('/albums')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              { id: 'album_midnights', name: 'Midnights', year: 2022, cover: 'https://cdn.example/midnights.png' },
+              { id: 'album_red', name: 'Red (Taylor\'s Version)', year: 2021, cover: 'https://cdn.example/red.png' }
+            ]
+          }
+        });
+        return;
+      }
+
+      options.fail(new Error(`Unhandled request: ${options.url}`));
+    }
+  } as unknown as typeof wx;
+
+  await import(new URL('../pages/favorites/index.ts?favorites-page-test', import.meta.url).href);
+
+  assert.ok(pageConfig);
+  pageConfig.setData = function setData(patch) {
+    this.data = { ...this.data, ...patch };
+  };
+  await pageConfig.onShow.call(pageConfig);
+
+  assert.deepEqual(pageConfig.data.favorites.map((item) => ({
+    id: item.id,
+    albumName: item.albumName,
+    hasMv: item.hasMv
+  })), [
+    {
+      id: 'song_all_too_well',
+      albumName: 'Red (Taylor\'s Version)',
+      hasMv: true
+    },
+    {
+      id: 'song_anti_hero',
+      albumName: 'Midnights',
+      hasMv: true
+    }
+  ]);
+  assert.equal(pageConfig.data.isLoading, false);
+  assert.equal(pageConfig.data.loadError, false);
 });
 
-test('favorites selector returns stored songs in storage order with mv metadata preserved', () => {
-  wx.setStorageSync('favoriteSongIds', ['song_anti_hero', 'song_all_too_well']);
+test('song list and favorites templates do not depend on local-only placeholder copy', () => {
+  const songListTemplate = readFileSync(new URL('../pages/song-list/index.wxml', import.meta.url), 'utf8');
+  const favoritesTemplate = readFileSync(new URL('../pages/favorites/index.wxml', import.meta.url), 'utf8');
 
-  const favorites = getFavoriteSongListItems();
-
-  assert.deepEqual(favorites.map((item) => item.id), ['song_anti_hero', 'song_all_too_well']);
-  assert.equal(favorites[0]?.hasMv, true);
-  assert.equal(favorites[1]?.hasMv, true);
-});
-
-test('favorite song list items stay empty when storage is empty', () => {
-  wx.setStorageSync('favoriteSongIds', []);
-
-  assert.deepEqual(getFavoriteSongListItems(), []);
+  assert.match(songListTemplate, /wx:for="{{songs}}"/);
+  assert.match(favoritesTemplate, /wx:for="{{favorites}}"/);
 });

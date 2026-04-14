@@ -40,6 +40,14 @@ class FakeDb {
   }
 }
 
+class QueryMapDb {
+  constructor(private readonly queries: Record<string, QueryResult | Record<string, unknown> | null>) {}
+
+  prepare(query: string) {
+    return new FakePreparedStatement(this.queries[query] ?? { results: [] });
+  }
+}
+
 type TestEnv = {
   DB: FakeDb;
 };
@@ -79,6 +87,7 @@ test('home endpoint returns empty arrays when the database is empty', async () =
 test('list endpoints return empty arrays when the database is empty', async () => {
   const listPaths = [
     '/albums',
+    '/songs',
     '/albums/album_midnights/songs',
     '/performances',
     '/documentaries',
@@ -117,5 +126,96 @@ test('unknown routes return a 404 payload', async () => {
   assert.deepEqual(body, {
     code: -1,
     data: null
+  });
+});
+
+test('song and album endpoints prefix image asset paths in response payloads', async () => {
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, name, year, cover, announcement_at, release_at FROM albums WHERE id = ?': {
+        id: 'album_midnights',
+        name: 'Midnights',
+        year: 2022,
+        cover: '/assets/images/albums/album-midnights.png',
+        announcement_at: null,
+        release_at: null
+      },
+      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE id = ?': {
+        id: 'song_anti_hero',
+        name: 'Anti-Hero',
+        album_id: 'album_midnights',
+        lyrics_json: '[]',
+        mv_json: JSON.stringify({
+          title: 'Anti-Hero (Official Music Video)',
+          cover: '/assets/images/ui/avatar-placeholder.png',
+          source: 'YouTube',
+          duration: '5:10'
+        })
+      }
+    })
+  };
+
+  const albumResult = await requestJson('/albums/album_midnights', env);
+  const songResult = await requestJson('/songs/song_anti_hero', env);
+
+  assert.deepEqual(albumResult.body, {
+    code: 0,
+    data: {
+      id: 'album_midnights',
+      name: 'Midnights',
+      year: 2022,
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png'
+    }
+  });
+  assert.deepEqual(songResult.body, {
+    code: 0,
+    data: {
+      id: 'song_anti_hero',
+      name: 'Anti-Hero',
+      albumId: 'album_midnights',
+      lyrics: [],
+      mv: {
+        title: 'Anti-Hero (Official Music Video)',
+        cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png',
+        source: 'YouTube',
+        duration: '5:10'
+      }
+    }
+  });
+});
+
+test('server also prefixes non-assets relative image paths from content data', async () => {
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, album_ids_json, setlists_json FROM tours WHERE id = ?': {
+        id: TOUR_IDS.eras,
+        name: 'The Eras Tour',
+        status: 1,
+        cover: '/tours/eras.jpg',
+        description: 'tour image path should resolve to CDN',
+        announcement_at: null,
+        start_at: 1772294400000,
+        end_at: 1788019200000,
+        album_ids_json: '[]',
+        setlists_json: '[]'
+      }
+    })
+  };
+
+  const result = await requestJson(`/tours/${TOUR_IDS.eras}`, env);
+
+  assert.deepEqual(result.body, {
+    code: 0,
+    data: {
+      id: TOUR_IDS.eras,
+      name: 'The Eras Tour',
+      status: 1,
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/tours/eras.jpg',
+      description: 'tour image path should resolve to CDN',
+      startAt: 1772294400000,
+      endAt: 1788019200000,
+      albumIds: [],
+      setlists: []
+    }
   });
 });

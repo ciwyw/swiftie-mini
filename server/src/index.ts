@@ -134,6 +134,11 @@ enum HomeSpotlightType {
   TourOngoing = 'tour_ongoing'
 }
 
+const IMAGE_CDN_BASE_URL = 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev';
+const IMAGE_URL_SCHEME_PATTERN = /^(?:https?:)?\/\//i;
+const IMAGE_DATA_URL_PATTERN = /^(?:data|wxfile|cloud):/i;
+const IMAGE_FILE_PATH_PATTERN = /^\/[^?#]+\.(?:png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i;
+
 const ROUTES = {
   album: '/pages/album/index',
   tourDetail: '/pages/tour/detail/index',
@@ -157,11 +162,51 @@ function json<T>(data: T, init?: ResponseInit): Response {
   });
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function prefixImagePath(value: string): string {
+  if (IMAGE_URL_SCHEME_PATTERN.test(value) || IMAGE_DATA_URL_PATTERN.test(value)) {
+    return value;
+  }
+
+  if (!IMAGE_FILE_PATH_PATTERN.test(value)) {
+    return value;
+  }
+
+  return `${IMAGE_CDN_BASE_URL}${value}`;
+}
+
+function normalizeImageFields<T>(value: T): T {
+  if (typeof value === 'string') {
+    return prefixImagePath(value) as T;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeImageFields(item)) as T;
+  }
+
+  if (isPlainObject(value)) {
+    return Object.entries(value).reduce<Record<string, unknown>>((acc, [key, item]) => {
+      acc[key] = normalizeImageFields(item);
+      return acc;
+    }, {}) as T;
+  }
+
+  return value;
+}
+
 function success<T>(data: T, init?: ResponseInit): Response {
   return json(
     {
       code: 0,
-      data
+      data: normalizeImageFields(data)
     },
     init
   );
@@ -516,6 +561,14 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'
     );
     return success(rows.map(mapAlbum));
+  }
+
+  if (pathname === '/songs') {
+    const rows = await queryAll<SongRecord>(
+      env.DB,
+      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs ORDER BY id ASC'
+    );
+    return success(rows.map(mapSong));
   }
 
   const songMatch = pathname.match(/^\/songs\/([^/]+)$/);

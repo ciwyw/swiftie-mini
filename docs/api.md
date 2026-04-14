@@ -58,6 +58,7 @@
 - `GET /albums`
 - `GET /albums/:id`
 - `GET /albums/:id/songs`
+- `GET /songs`
 - `GET /songs/:id`
 - `GET /performances`
 - `GET /documentaries`
@@ -73,6 +74,12 @@
 - `GET /home` 返回 `{ spotlights: [], eras: [], news: [] }`
 - 列表接口返回 `[]`
 - 详情接口返回 `null`
+
+图片字段契约：
+
+- 接口返回的图片字段统一为可直接渲染的完整 URL
+- 当前由服务端对相对图片路径自动补齐 CDN 前缀，例如 `/assets/images/...`、`/tours/eras.jpg`
+- 用户头像缓存不走该规则，继续保留微信返回或本地缓存的原始地址
 
 ## 当前本地交互边界
 

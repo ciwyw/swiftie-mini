@@ -1,19 +1,51 @@
 import { ROUTES } from '../../utils/constants';
-import { SongListItem, getFavoriteSongListItems } from '../../utils/librarySelectors';
+import { loadFavoriteSongListPage, SongListItem } from '../../services/contentStore';
+import { getFavoriteSongIds } from '../../utils/storage';
 
 interface FavoritesData {
   favorites: SongListItem[];
+  isLoading: boolean;
+  loadError: boolean;
 }
 
 Page({
   data: {
-    favorites: []
+    favorites: [],
+    isLoading: false,
+    loadError: false
   } as FavoritesData,
 
   onShow() {
-    this.setData({
-      favorites: getFavoriteSongListItems()
-    });
+    return this.loadPage();
+  },
+
+  async loadPage() {
+    const favoriteIds = getFavoriteSongIds();
+
+    if (favoriteIds.length === 0) {
+      this.setData({
+        favorites: [],
+        isLoading: false,
+        loadError: false
+      });
+      return;
+    }
+
+    this.setData({ isLoading: true, loadError: false });
+
+    try {
+      this.setData({
+        favorites: await loadFavoriteSongListPage(favoriteIds),
+        isLoading: false,
+        loadError: false
+      });
+    } catch {
+      this.setData({
+        favorites: [],
+        isLoading: false,
+        loadError: true
+      });
+    }
   },
 
   goSong(event: { currentTarget: { dataset: { id: string } } }) {

@@ -18,6 +18,10 @@ export function fetchAlbumDetail(id: string) {
   return request<Album | null>(`/albums/${id}`);
 }
 
+export function fetchSongs() {
+  return request<Song[]>('/songs');
+}
+
 export function fetchAlbumSongs(id: string) {
   return request<Song[]>(`/albums/${id}/songs`);
 }

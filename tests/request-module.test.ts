@@ -57,3 +57,42 @@ test('request testing override can replace and then restore the API base URL', a
     'https://swiftie-mini-server.ciwywi9649.workers.dev/health'
   ]);
 });
+
+test('request passes API response data through without rewriting image fields', async () => {
+  runtimeGlobal.wx = {
+    request(options: RequestOptions) {
+      options.success({
+        statusCode: 200,
+        data: {
+          code: 0,
+          data: {
+            cover: '/assets/images/albums/album-midnights.png',
+            nested: {
+              image: '/assets/images/ui/avatar-placeholder.png',
+              avatarUrl: 'https://wx.example/avatar.png'
+            },
+            seatMapImages: ['/assets/images/ui/avatar-placeholder.png']
+          }
+        }
+      });
+    }
+  };
+
+  const response = await request<{
+    cover: string;
+    nested: {
+      image: string;
+      avatarUrl: string;
+    };
+    seatMapImages: string[];
+  }>('/albums/album_midnights');
+
+  assert.deepEqual(response, {
+    cover: '/assets/images/albums/album-midnights.png',
+    nested: {
+      image: '/assets/images/ui/avatar-placeholder.png',
+      avatarUrl: 'https://wx.example/avatar.png'
+    },
+    seatMapImages: ['/assets/images/ui/avatar-placeholder.png']
+  });
+});

@@ -6,38 +6,40 @@
 
 - 页面运行时优先走 `services/` 下的远程请求与缓存层
 - `server/` 提供 Cloudflare Workers + D1 的只读接口
-- `data/` 目录仍然保留，当前主要用于本地 selector 测试、页面结构验证和迁移过渡期的静态参考
+- 公开内容不再保留运行时本地 mock 数据
 
 ### 首页与内容接口数据
 
-- [data/home.ts](/Users/bytedance/projects/swiftie-mini/data/home.ts)
-- [data/news.ts](/Users/bytedance/projects/swiftie-mini/data/news.ts)
 - [services/contentApi.ts](/Users/bytedance/projects/swiftie-mini/services/contentApi.ts)
 - [services/contentStore.ts](/Users/bytedance/projects/swiftie-mini/services/contentStore.ts)
 
 说明：
 
-- `data/home.ts` 现在只维护首页的编辑型 era 卡片，不再手写 `spotlights`
-- 首页 `spotlights` 由 `utils/homeSelectors.ts` 根据专辑与巡演时间窗自动生成
 - 运行时首页数据通过 `GET /home` 获取
-- `data/news.ts` 当前主要服务于本地 selector 测试
+- 首页 `spotlights` 由服务端根据专辑与巡演时间窗动态生成
+- Era 卡片与 news 摘要都由 `GET /home` 一并返回
 
 ### Era 展厅数据
 
-- [data/eraExhibits.ts](/Users/bytedance/projects/swiftie-mini/data/eraExhibits.ts)
+- `GET /eras/:id`
 
 ### 资料馆数据
 
-- [data/albums.ts](/Users/bytedance/projects/swiftie-mini/data/albums.ts)
-- [data/songs.ts](/Users/bytedance/projects/swiftie-mini/data/songs.ts)
-- [data/performances.ts](/Users/bytedance/projects/swiftie-mini/data/performances.ts)
-- [data/documentaries.ts](/Users/bytedance/projects/swiftie-mini/data/documentaries.ts)
+- `GET /albums`
+- `GET /albums/:id`
+- `GET /albums/:id/songs`
+- `GET /songs`
+- `GET /songs/:id`
+- `GET /performances`
+- `GET /documentaries`
 
 ### 巡演数据
 
-- [data/tours.ts](/Users/bytedance/projects/swiftie-mini/data/tours.ts)
-- [data/shows.ts](/Users/bytedance/projects/swiftie-mini/data/shows.ts)
-- [data/videos.ts](/Users/bytedance/projects/swiftie-mini/data/videos.ts)
+- `GET /tours`
+- `GET /tours/:id`
+- `GET /tours/:id/shows`
+- `GET /shows/:id`
+- `GET /shows/:id/videos`
 
 ## 类型模型
 
@@ -56,30 +58,9 @@
 - `types/tour.ts` 承担巡演模块的主类型出口
 - `types/era.ts` 承担 Era 展厅的主类型出口
 - 实际时间字段统一使用时间戳
-- `data/songs.ts` 中的 `Song` 支持可选 `mv`
-- `data/performances.ts` 使用 `Performance.domain` 区分资料馆内容与巡演语境
-- `data/eraExhibits.ts` 只保存 Era 展厅的编辑型 mock 资料，不重复存储 album/song/performance 的完整内容
+- `Song` 支持可选 `mv`
+- `Performance.domain` 区分资料馆内容与巡演语境
 - `Show` 已经并入票务/场馆字段，不再单独维护 `ShowGuide`
-
-## Selector 与视图派生
-
-- [utils/selectors.ts](/Users/bytedance/projects/swiftie-mini/utils/selectors.ts)：通用查询与派生
-- [utils/homeSelectors.ts](/Users/bytedance/projects/swiftie-mini/utils/homeSelectors.ts)：首页聚合与派生
-- [utils/librarySelectors.ts](/Users/bytedance/projects/swiftie-mini/utils/librarySelectors.ts)：资料馆专用派生
-- [utils/eraSelectors.ts](/Users/bytedance/projects/swiftie-mini/utils/eraSelectors.ts)：Era 展厅聚合与跨域解析
-
-当前主要负责：
-
-- 专辑、歌曲、巡演、场次、视频数据的查找
-- 首页 `spotlights + eras + news` 的聚合视图数据
-- 资料馆入口、歌曲列表、收藏列表、视频区块的派生
-- Era 展厅详情的查找、album/song/performance 解析和缺失引用过滤
-
-补充说明：
-
-- 首页 `spotlights` 是 selector 的派生结果，不直接由 `data/home.ts` 维护
-- `groupTourShowsByLocation()` 等纯派生函数仍保留在 selector 层，供远程数据页面复用
-- 巡演 Checklist 的读写由 [utils/storage.ts](/Users/bytedance/projects/swiftie-mini/utils/storage.ts) 负责，而不是 selector 层
 
 ## 运行时远程数据层
 
@@ -87,10 +68,16 @@
 - [services/contentApi.ts](/Users/bytedance/projects/swiftie-mini/services/contentApi.ts)：封装具体接口
 - [services/contentStore.ts](/Users/bytedance/projects/swiftie-mini/services/contentStore.ts)：做按接口缓存和页面级组合加载
 
+补充：
+
+- 公开内容接口返回的相对图片路径会由服务端统一补齐为 R2 完整 URL
+
 当前通过远程接口加载的页面：
 
 - [pages/home/index.ts](/Users/bytedance/projects/swiftie-mini/pages/home/index.ts)
 - [pages/album/index.ts](/Users/bytedance/projects/swiftie-mini/pages/album/index.ts)
+- [pages/song-list/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song-list/index.ts)
+- [pages/favorites/index.ts](/Users/bytedance/projects/swiftie-mini/pages/favorites/index.ts)
 - [pages/song/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song/index.ts)
 - [pages/performance/index.ts](/Users/bytedance/projects/swiftie-mini/pages/performance/index.ts)
 - [pages/documentary/index.ts](/Users/bytedance/projects/swiftie-mini/pages/documentary/index.ts)
@@ -112,6 +99,6 @@
 
 ## 修改建议
 
-- 新增业务数据时，优先补 `types/` 再补 `data/`
-- 页面需要新组合字段时，优先落到 `services/contentStore.ts` 或纯 selector，而不是在页面内重复计算
+- 新增业务数据时，优先补 `types/`、`server/` schema 与接口映射
+- 页面需要新组合字段时，优先落到 `services/contentStore.ts`，而不是在页面内重复计算
 - 修改本地存储结构时，同步更新 `utils/storage.ts`、`utils/constants.ts` 和相关消费页面

@@ -31,10 +31,7 @@ function syncAppProfile(profile: UserProfile): void {
 
 Page({
   data: {
-    profile: {
-      avatarUrl: '/assets/images/ui/avatar-placeholder.png',
-      nickName: 'Swiftie'
-    },
+    profile: { ...DEFAULT_USER_PROFILE },
     hasWechatProfile: false
   } as ProfileData,
 

@@ -1,7 +1,17 @@
 import { loadShowDetailPage } from '../../../services/contentStore';
-import { Show, Video } from '../../../types/tour';
+import { Show, ShowStatus, Video } from '../../../types/tour';
 import { ROUTES } from '../../../utils/constants';
-import { getShowStatusText } from '../../../utils/selectors';
+
+const SHOW_STATUS_TEXT: Record<ShowStatus, string> = {
+  upcoming: '待开始',
+  ongoing: '进行中',
+  ended: '已结束',
+  cancelled: '已取消'
+};
+
+function getShowStatusText(status: ShowStatus): string {
+  return SHOW_STATUS_TEXT[status];
+}
 
 interface ShowDetailView extends Show {
   statusText: string;

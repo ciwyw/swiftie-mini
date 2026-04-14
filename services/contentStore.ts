@@ -1,4 +1,6 @@
 import { ROUTES } from '../utils/constants';
+import { Album } from '../types/album';
+import { Song } from '../types/song';
 import {
   fetchAlbumDetail,
   fetchAlbums,
@@ -9,6 +11,7 @@ import {
   fetchPerformances,
   fetchShowDetail,
   fetchShowVideos,
+  fetchSongs,
   fetchSongDetail,
   fetchTourDetail,
   fetchTours,
@@ -35,6 +38,19 @@ export function clearContentStoreCache() {
   cache.clear();
 }
 
+export interface SongListItem extends Song {
+  albumName: string;
+  hasMv: boolean;
+}
+
+function buildSongListItems(songs: Song[], albums: Album[]): SongListItem[] {
+  return songs.map((song) => ({
+    ...song,
+    albumName: albums.find((album) => album.id === song.albumId)?.name ?? song.albumId,
+    hasMv: Boolean(song.mv)
+  }));
+}
+
 export function loadHomeFeed() {
   return fromCache('home', () => fetchHomeFeed());
 }
@@ -47,8 +63,28 @@ export function loadAlbumDetail(id: string) {
   return fromCache(`album:${id}`, () => fetchAlbumDetail(id));
 }
 
+export function loadSongs() {
+  return fromCache('songs', () => fetchSongs());
+}
+
 export function loadAlbumSongs(id: string) {
   return fromCache(`albumSongs:${id}`, () => fetchAlbumSongs(id));
+}
+
+export async function loadSongListPage() {
+  const [songs, albums] = await Promise.all([loadSongs(), loadAlbumList()]);
+  return buildSongListItems(songs, albums);
+}
+
+export async function loadFavoriteSongListPage(favoriteIds: string[]) {
+  if (favoriteIds.length === 0) {
+    return [];
+  }
+
+  const songItems = await loadSongListPage();
+  return favoriteIds
+    .map((id) => songItems.find((item) => item.id === id))
+    .filter((item): item is SongListItem => Boolean(item));
 }
 
 export async function loadAlbumDetailPage(id: string) {

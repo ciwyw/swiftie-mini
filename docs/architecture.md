@@ -56,12 +56,7 @@
 - `pages/`：页面生命周期、交互和视图状态
 - `services/`：远程请求、接口封装和内容缓存层
 - `server/`：Cloudflare Workers 服务端与 D1 schema
-- `data/`：本地 mock 业务数据
 - `types/`：领域类型定义
-- `utils/selectors.ts`：跨模块通用读取与派生逻辑
-- `utils/homeSelectors.ts`：首页专用聚合与派生
-- `utils/librarySelectors.ts`：资料馆模块专用视图派生
-- `utils/eraSelectors.ts`：Era 展厅详情聚合与跨域内容解析
 - `utils/storage.ts`：本地持久化读写
 - `utils/constants.ts`：路由、存储 key 和默认常量
 
@@ -72,6 +67,8 @@
 - [pages/home/index.ts](/Users/bytedance/projects/swiftie-mini/pages/home/index.ts)：首页远程加载 `GET /home`
 - [pages/library/index.ts](/Users/bytedance/projects/swiftie-mini/pages/library/index.ts)：资料馆入口聚合页
 - [pages/album/index.ts](/Users/bytedance/projects/swiftie-mini/pages/album/index.ts)：专辑列表/详情双态，远程加载专辑与歌曲
+- [pages/song-list/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song-list/index.ts)：歌曲列表页，远程加载全部歌曲与专辑名映射
+- [pages/favorites/index.ts](/Users/bytedance/projects/swiftie-mini/pages/favorites/index.ts)：收藏列表页，远程加载歌曲并结合本地收藏 id 过滤
 - [pages/song/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song/index.ts)：歌曲详情、收藏、本地歌词展示与远程视频关联内容
 
 ### Era 展厅
@@ -93,7 +90,7 @@
 
 ## 实现边界
 
-- 页面层优先消费 `services/contentStore.ts` 和纯 selector，而不是在页面内部直接拼装复杂业务数据
+- 页面层优先消费 `services/contentStore.ts`，而不是在页面内部直接拼装复杂业务数据
 - `pages/library/index.ts` 仍保持静态入口，不发请求
 - 公开内容页面现在默认走远程 API；请求失败显示统一失败态，不再回退到运行时 mock
 - 收藏、用户资料缓存、抢票助手 Checklist 仍然保留本地存储

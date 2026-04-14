@@ -1,99 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { eraExhibits } from '../data/eraExhibits';
-import { homeEraCards } from '../data/home';
-import { getEraExhibitDetailById } from '../utils/eraSelectors';
+import { clearContentStoreCache } from '../services/contentStore';
 
-test('getEraExhibitDetailById resolves the Midnights archive contract', () => {
-  const detail = getEraExhibitDetailById('era_midnights');
-
-  assert.ok(detail);
-  assert.equal('revisit' in detail, false);
-  assert.equal('yearLabel' in detail.hero, false);
-  assert.equal(detail?.album?.id, 'album_midnights');
-  assert.deepEqual(detail?.signatureLooks[0], {
-    id: 'look_midnights_glitter',
-    title: '亮片与深夜秀场感造型',
-    image: '/assets/images/albums/album-midnights.png'
-  });
-  assert.deepEqual(
-    detail?.featuredHonors.map((item) => item.id),
-    [
-      'honor_midnights_pop_vocal_album',
-      'honor_midnights_hot_100_top_ten',
-      'honor_midnights_billboard_200'
-    ]
-  );
-  assert.equal(detail?.remainingHonors.length, 1);
-  assert.deepEqual(
-    detail?.performances.map((item) => ({ id: item.id, kind: item.kind })),
-    [
-      { id: 'performance_iheart_anti_hero', kind: 'live' },
-      { id: 'performance_midnights_release_interview', kind: 'interview' }
-    ]
-  );
-  assert.equal(detail?.milestones[0]?.title, '官宣专辑');
-  assert.equal(detail?.milestones[1]?.title, '单曲打单');
-  assert.equal(detail?.milestones[2]?.title, '专辑发布');
-  assert.equal(detail?.milestones.every((item) => !('dateLabel' in item)), true);
-});
-
-test('getEraExhibitDetailById keeps the archive shape when references are missing', () => {
-  const detail = getEraExhibitDetailById('era_taylor_swift');
-
-  assert.ok(detail);
-  assert.deepEqual(detail?.performances, []);
-  assert.equal(detail?.featuredHonors.length, 3);
-  assert.equal(detail?.remainingHonors.length, 0);
-  assert.equal(detail?.signatureLooks[0]?.title, '卷发与原木吉他');
-});
-
-test('getEraExhibitDetailById resolves revisit-only archive records for Red and folklore', () => {
-  const red = getEraExhibitDetailById('era_red');
-  const folklore = getEraExhibitDetailById('era_folklore');
-
-  assert.ok(red);
-  assert.ok(folklore);
-  assert.deepEqual(red?.performances.map((item) => item.id), [
-    'performance_grammys_all_too_well',
-    'performance_bbc_holy_ground'
-  ]);
-  assert.deepEqual(folklore?.performances.map((item) => ({ id: item.id, kind: item.kind })), [
-    { id: 'performance_long_pond_session', kind: 'special' }
-  ]);
-});
-
-test('era exhibit seeds stay aligned with homepage ids and archive requirements', () => {
-  assert.equal(eraExhibits.length, 7);
-  assert.deepEqual(
-    eraExhibits.map((item) => item.id),
-    homeEraCards.map((item) => item.id)
-  );
-
-  eraExhibits.forEach((item) => {
-    assert.ok(item.eraHonors.length >= 3);
-    assert.equal(item.milestones[0]?.title, '官宣专辑');
-    assert.equal(item.milestones[1]?.title, '单曲打单');
-    assert.equal(item.milestones[2]?.title, '专辑发布');
-  });
-});
-
-test('single release milestones without seeded songs do not point to album pages', () => {
-  const unlinkedSingleMilestones = ['era_speak_now', 'era_red', 'era_1989', 'era_folklore'].map((id) =>
-    eraExhibits.find((item) => item.id === id)?.milestones[1]
-  );
-
-  assert.deepEqual(
-    unlinkedSingleMilestones.map((item) => item?.action),
-    [undefined, undefined, undefined, undefined]
-  );
-});
-
-test('era detail page controller loads archive state and opens honor/revisit interactions', async () => {
+test('era detail page controller loads remote archive state and opens honor/revisit interactions', async () => {
   type EraDetailPageConfig = {
     data: {
-      exhibit: ReturnType<typeof getEraExhibitDetailById> | null;
+      exhibit: {
+        featuredHonors: Array<{ id: string }>;
+        remainingHonors: Array<{ id: string }>;
+      } | null;
       hasError: boolean;
       isHonorSheetOpen: boolean;
     };
@@ -114,6 +30,8 @@ test('era detail page controller loads archive state and opens honor/revisit int
       };
     }) => void;
   };
+
+  clearContentStoreCache();
 
   const runtimeGlobal = globalThis as typeof globalThis & {
     Page?: typeof Page;
@@ -136,19 +54,19 @@ test('era detail page controller loads archive state and opens honor/revisit int
     eraName: 'Midnights',
     hero: {
       intro: '午夜蓝、清醒独白、镜像自省与既华丽又不安的深夜思绪。',
-      cover: '/assets/images/albums/album-midnights.png',
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png',
       themeColor: '#324765'
     },
     signatureLooks: [
       {
         id: 'look_midnights_glitter',
         title: '亮片与深夜秀场感造型',
-        image: '/assets/images/albums/album-midnights.png'
+        image: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png'
       },
       {
         id: 'look_midnights_retro',
         title: '复古午夜妆造',
-        image: '/assets/images/ui/avatar-placeholder.png'
+        image: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png'
       }
     ],
     milestones: [
@@ -216,7 +134,7 @@ test('era detail page controller loads archive state and opens honor/revisit int
     id: 'album_midnights',
     name: 'Midnights',
     year: 2022,
-    cover: '/assets/images/albums/album-midnights.png'
+    cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png'
   };
   const performancesPayload = [
     {
@@ -227,7 +145,7 @@ test('era detail page controller loads archive state and opens honor/revisit int
       domain: 'library',
       eventName: 'iHeartRadio Music Awards',
       year: 2023,
-      cover: '/assets/images/ui/avatar-placeholder.png',
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png',
       source: 'FOX',
       duration: '4:27',
       summary: 'A televised performance built around the Midnights visual language.'
@@ -240,7 +158,7 @@ test('era detail page controller loads archive state and opens honor/revisit int
       domain: 'library',
       eventName: 'iHeartRadio Interview',
       year: 2022,
-      cover: '/assets/images/ui/avatar-placeholder.png',
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png',
       source: 'iHeartRadio',
       duration: '12:40',
       summary: 'A release-week conversation focused on the album’s sleepless-night concept.'
