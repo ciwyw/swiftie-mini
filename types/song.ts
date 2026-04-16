@@ -14,6 +14,7 @@ export interface Song {
   id: string;
   name: string;
   albumId?: string;
+  year?: number;
   durationMs?: number;
   lyrics: LyricLine[];
   mv?: SongMvAsset;

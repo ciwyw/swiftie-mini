@@ -57,6 +57,7 @@ interface SongRecord {
   id: string;
   name: string;
   album_id: string | null;
+  year: number | null;
   duration_ms: number | null;
   lyrics_json: string;
   mv_json: string | null;
@@ -79,6 +80,7 @@ interface AlbumSongSectionRecord {
   song_id: string | null;
   song_name: string | null;
   song_album_id: string | null;
+  song_year: number | null;
   song_disc_no: number | null;
   song_track_no: number | null;
   song_display_name: string | null;
@@ -436,6 +438,7 @@ function mapSong(record: SongRecord) {
     id: record.id,
     name: record.name,
     albumId: record.album_id ?? undefined,
+    year: typeof record.year === 'number' ? record.year : undefined,
     durationMs: typeof record.duration_ms === 'number' ? record.duration_ms : undefined,
     lyrics: parseJsonArray(record.lyrics_json),
     mv: parseJsonObject(record.mv_json) ?? undefined
@@ -638,6 +641,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
           s.id AS song_id,
           s.name AS song_name,
           s.album_id AS song_album_id,
+          s.year AS song_year,
           s.disc_no AS song_disc_no,
           s.track_no AS song_track_no,
           s.display_name AS song_display_name,
@@ -683,6 +687,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
             id: record.song_id,
             name: record.song_name ?? '',
             album_id: record.song_album_id ?? albumId,
+            year: record.song_year,
             duration_ms: record.song_duration_ms,
             lyrics_json: record.song_lyrics_json ?? '[]',
             mv_json: record.song_mv_json
@@ -696,6 +701,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
           id: string;
           name: string;
           album_id: string;
+          year: number | null;
           duration_ms: number | null;
           lyrics_json: string;
           mv_json: string | null;
@@ -704,7 +710,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
           display_name: string | null;
         }>(
           env.DB,
-          `SELECT id, name, album_id, duration_ms, lyrics_json, mv_json, disc_no, track_no, display_name
+          `SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json, disc_no, track_no, display_name
           FROM songs
           WHERE album_id = ? AND (edition_id IS NULL OR edition_id = '')
           ORDER BY disc_no ASC, track_no ASC, id ASC`,
@@ -731,7 +737,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
     const songs = await queryAll<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id = ? ORDER BY id ASC',
+      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id = ? ORDER BY id ASC',
       albumId
     );
     if (songs.length === 0) {
@@ -791,7 +797,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/songs') {
     const rows = await queryAll<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs ORDER BY id ASC'
+      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs ORDER BY id ASC'
     );
     return success(rows.map(mapSong));
   }
@@ -799,7 +805,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/singles') {
     const rows = await queryAll<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id IS NULL ORDER BY id ASC'
+      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id IS NULL ORDER BY year ASC, id ASC'
     );
     return success(rows.map(mapSong));
   }
@@ -808,7 +814,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (songMatch) {
     const record = await queryFirst<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?',
+      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?',
       songMatch[1]
     );
     return success(record ? mapSong(record) : null);

@@ -49,12 +49,13 @@ test('library page exposes the five primary destinations in product order', asyn
   pageConfig.onLoad.call(pageConfig);
   assert.deepEqual(
     pageConfig.data.entries.map((entry) => entry.id),
-    ['albums', 'songs', 'performances', 'documentaries', 'favorites']
+    ['albums', 'singles', 'songs', 'performances', 'documentaries', 'favorites']
   );
   assert.deepEqual(
     pageConfig.data.entries.map((entry) => entry.route),
     [
       ROUTES.album,
+      `${ROUTES.songList}?scope=singles`,
       ROUTES.songList,
       ROUTES.performanceList,
       ROUTES.documentaryList,
@@ -74,7 +75,7 @@ test('song list page loads songs from remote interfaces and maps album names wit
       loadError: boolean;
     };
     setData: (patch: Partial<SongListPageConfig['data']>) => void;
-    onLoad: () => void | Promise<void>;
+    onLoad: (options: { scope?: string }) => void | Promise<void>;
     retryLoad: () => Promise<void>;
   };
 
@@ -87,6 +88,7 @@ test('song list page loads songs from remote interfaces and maps album names wit
   }) as unknown as typeof Page;
   (globalThis as typeof globalThis & { wx?: unknown }).wx = {
     ...(globalThis as unknown as { wx: typeof wx }).wx,
+    setNavigationBarTitle() {},
     request(options: {
       url: string;
       success: (result: { statusCode: number; data: unknown }) => void;
@@ -115,6 +117,12 @@ test('song list page loads songs from remote interfaces and maps album names wit
                 id: 'song_tim_mcgraw',
                 name: 'Tim McGraw',
                 albumId: 'album_taylor_swift',
+                lyrics: []
+              },
+              {
+                id: 'song_carolina',
+                name: 'Carolina',
+                year: 2022,
                 lyrics: []
               }
             ]
@@ -147,7 +155,7 @@ test('song list page loads songs from remote interfaces and maps album names wit
   pageConfig.setData = function setData(patch) {
     this.data = { ...this.data, ...patch };
   };
-  await pageConfig.onLoad.call(pageConfig);
+  await pageConfig.onLoad.call(pageConfig, {});
 
   assert.deepEqual(requestUrls.map((url) => url.replace(/^https?:\/\/[^/]+/, '')), ['/songs', '/albums']);
   assert.deepEqual(pageConfig.data.songs.map((item) => ({
@@ -163,6 +171,11 @@ test('song list page loads songs from remote interfaces and maps album names wit
     {
       id: 'song_tim_mcgraw',
       albumName: 'Taylor Swift',
+      hasMv: false
+    },
+    {
+      id: 'song_carolina',
+      albumName: '2022',
       hasMv: false
     }
   ]);
@@ -182,7 +195,7 @@ test('favorites page loads remote songs and keeps local favorite order', async (
   };
 
   let pageConfig: FavoritesPageConfig | undefined;
-  storage.set('favoriteSongIds', ['song_all_too_well', 'song_anti_hero']);
+  storage.set('favoriteSongIds', ['song_carolina', 'song_all_too_well', 'song_anti_hero']);
   clearContentStoreCache();
 
   (globalThis as typeof globalThis & { Page?: unknown }).Page = ((config: FavoritesPageConfig) => {
@@ -201,6 +214,7 @@ test('favorites page loads remote songs and keeps local favorite order', async (
           data: {
             code: 0,
             data: [
+              { id: 'song_carolina', name: 'Carolina', year: 2022, lyrics: [] },
               { id: 'song_anti_hero', name: 'Anti-Hero', albumId: 'album_midnights', lyrics: [], mv: { title: 'Anti-Hero', cover: 'https://cdn.example/anti-hero.png', source: 'YouTube', duration: '5:10' } },
               { id: 'song_all_too_well', name: 'All Too Well', albumId: 'album_red', lyrics: [], mv: { title: 'All Too Well', cover: 'https://cdn.example/atw.png', source: 'YouTube', duration: '14:56' } }
             ]
@@ -240,6 +254,11 @@ test('favorites page loads remote songs and keeps local favorite order', async (
     albumName: item.albumName,
     hasMv: item.hasMv
   })), [
+    {
+      id: 'song_carolina',
+      albumName: '2022',
+      hasMv: false
+    },
     {
       id: 'song_all_too_well',
       albumName: 'Red (Taylor\'s Version)',

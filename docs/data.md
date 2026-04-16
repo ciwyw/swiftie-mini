@@ -62,8 +62,10 @@
 - `types/era.ts` 承担 Era 展厅的主类型出口
 - 实际时间字段统一使用时间戳
 - `Song` 支持可选 `mv`
+- `Song.year` 用于记录非专辑单曲发行年份（可选）
 - `Song.durationMs` 用于存储歌曲时长（毫秒，可选）
 - `Album.kind` 用于区分专辑与特殊集合（例如 `singles`）
+- 非专辑单曲直接存放在 `songs`，其 `album_id / edition_id` 为空，年份落在 `songs.year`
 - `AlbumEdition` 用于描述专辑版本；`AlbumTrack` 由 `Song.edition_id + disc_no + track_no + display_name` 组合派生
 - `GET /albums/:id/songs` 直接返回按版本分组后的 `AlbumSongSection[]`
 - `Performance.domain` 区分资料馆内容与巡演语境

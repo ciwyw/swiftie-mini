@@ -144,10 +144,11 @@ test('song and album endpoints prefix image asset paths in response payloads', a
         release_at: null,
         kind: 'album'
       },
-      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?': {
+      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?': {
         id: 'song_anti_hero',
         name: 'Anti-Hero',
         album_id: 'album_midnights',
+        year: null,
         duration_ms: null,
         lyrics_json: '[]',
         mv_json: JSON.stringify({

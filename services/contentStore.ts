@@ -50,7 +50,9 @@ function buildSongListItems(songs: Song[], albums: Album[]): SongListItem[] {
     albumName:
       song.albumId
         ? albums.find((album) => album.id === song.albumId)?.name ?? song.albumId
-        : '单曲',
+        : song.year
+          ? String(song.year)
+          : '单曲',
     hasMv: Boolean(song.mv)
   }));
 }
