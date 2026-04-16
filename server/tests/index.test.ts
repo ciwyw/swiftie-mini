@@ -88,6 +88,7 @@ test('list endpoints return empty arrays when the database is empty', async () =
   const listPaths = [
     '/albums',
     '/songs',
+    '/singles',
     '/albums/album_midnights/songs',
     '/albums/album_midnights/editions',
     '/editions/edition_album_midnights_standard/tracks',

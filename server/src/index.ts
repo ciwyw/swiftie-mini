@@ -56,7 +56,7 @@ interface EraRecord {
 interface SongRecord {
   id: string;
   name: string;
-  album_id: string;
+  album_id: string | null;
   duration_ms: number | null;
   lyrics_json: string;
   mv_json: string | null;
@@ -435,7 +435,7 @@ function mapSong(record: SongRecord) {
   return {
     id: record.id,
     name: record.name,
-    albumId: record.album_id,
+    albumId: record.album_id ?? undefined,
     durationMs: typeof record.duration_ms === 'number' ? record.duration_ms : undefined,
     lyrics: parseJsonArray(record.lyrics_json),
     mv: parseJsonObject(record.mv_json) ?? undefined
@@ -792,6 +792,14 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     const rows = await queryAll<SongRecord>(
       env.DB,
       'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs ORDER BY id ASC'
+    );
+    return success(rows.map(mapSong));
+  }
+
+  if (pathname === '/singles') {
+    const rows = await queryAll<SongRecord>(
+      env.DB,
+      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id IS NULL ORDER BY id ASC'
     );
     return success(rows.map(mapSong));
   }

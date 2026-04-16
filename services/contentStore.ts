@@ -12,6 +12,7 @@ import {
   fetchShowDetail,
   fetchShowVideos,
   fetchSongs,
+  fetchSingles,
   fetchSongDetail,
   fetchTourDetail,
   fetchTours,
@@ -43,17 +44,13 @@ export interface SongListItem extends Song {
   hasMv: boolean;
 }
 
-const SPECIAL_ALBUM_NAMES: Record<string, string> = {
-  album_singles: '单曲'
-};
-
 function buildSongListItems(songs: Song[], albums: Album[]): SongListItem[] {
   return songs.map((song) => ({
     ...song,
     albumName:
-      albums.find((album) => album.id === song.albumId)?.name ??
-      SPECIAL_ALBUM_NAMES[song.albumId] ??
-      song.albumId,
+      song.albumId
+        ? albums.find((album) => album.id === song.albumId)?.name ?? song.albumId
+        : '单曲',
     hasMv: Boolean(song.mv)
   }));
 }
@@ -74,12 +71,21 @@ export function loadSongs() {
   return fromCache('songs', () => fetchSongs());
 }
 
+export function loadSingles() {
+  return fromCache('singles', () => fetchSingles());
+}
+
 export function loadAlbumSongs(id: string) {
   return fromCache(`albumSongs:${id}`, () => fetchAlbumSongs(id));
 }
 
 export async function loadSongListPage() {
   const [songs, albums] = await Promise.all([loadSongs(), loadAlbumList()]);
+  return buildSongListItems(songs, albums);
+}
+
+export async function loadSinglesListPage() {
+  const [songs, albums] = await Promise.all([loadSingles(), loadAlbumList()]);
   return buildSongListItems(songs, albums);
 }
 
@@ -118,7 +124,7 @@ export async function loadSongDetailPage(id: string) {
   }
 
   const [album, performances] = await Promise.all([
-    loadAlbumDetail(song.albumId),
+    song.albumId ? loadAlbumDetail(song.albumId) : Promise.resolve(null),
     loadPerformances()
   ]);
 

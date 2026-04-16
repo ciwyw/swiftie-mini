@@ -13,7 +13,7 @@ export interface SongMvAsset {
 export interface Song {
   id: string;
   name: string;
-  albumId: string;
+  albumId?: string;
   durationMs?: number;
   lyrics: LyricLine[];
   mv?: SongMvAsset;
