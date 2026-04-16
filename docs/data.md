@@ -31,6 +31,7 @@
 - `GET /albums/:id/editions`
 - `GET /editions/:id/tracks`
 - `GET /songs`
+- `GET /singles`
 - `GET /songs/:id`
 - `GET /performances`
 - `GET /documentaries`

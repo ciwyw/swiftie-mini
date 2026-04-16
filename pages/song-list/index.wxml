@@ -1,7 +1,7 @@
 <view class="container">
   <view class="card list-head">
-    <text class="section-title">歌曲列表</text>
-    <text class="section-subtitle">完整歌曲条目与 MV 标记。</text>
+    <text class="section-title">{{title}}</text>
+    <text class="section-subtitle">{{subtitle}}</text>
   </view>
 
   <view class="card">

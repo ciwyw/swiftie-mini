@@ -22,6 +22,10 @@ export function fetchSongs() {
   return request<Song[]>('/songs');
 }
 
+export function fetchSingles() {
+  return request<Song[]>('/singles');
+}
+
 export function fetchAlbumSongs(id: string) {
   return request<AlbumSongSection[]>(`/albums/${id}/songs`);
 }
