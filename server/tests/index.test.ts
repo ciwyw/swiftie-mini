@@ -89,6 +89,8 @@ test('list endpoints return empty arrays when the database is empty', async () =
     '/albums',
     '/songs',
     '/albums/album_midnights/songs',
+    '/albums/album_midnights/editions',
+    '/editions/edition_album_midnights_standard/tracks',
     '/performances',
     '/documentaries',
     '/tours',
@@ -132,18 +134,20 @@ test('unknown routes return a 404 payload', async () => {
 test('song and album endpoints prefix image asset paths in response payloads', async () => {
   const env = {
     DB: new QueryMapDb({
-      'SELECT id, name, year, cover, announcement_at, release_at FROM albums WHERE id = ?': {
+      'SELECT id, name, year, cover, announcement_at, release_at, kind FROM albums WHERE id = ?': {
         id: 'album_midnights',
         name: 'Midnights',
         year: 2022,
         cover: '/assets/images/albums/album-midnights.png',
         announcement_at: null,
-        release_at: null
+        release_at: null,
+        kind: 'album'
       },
-      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE id = ?': {
+      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?': {
         id: 'song_anti_hero',
         name: 'Anti-Hero',
         album_id: 'album_midnights',
+        duration_ms: null,
         lyrics_json: '[]',
         mv_json: JSON.stringify({
           title: 'Anti-Hero (Official Music Video)',
@@ -164,7 +168,8 @@ test('song and album endpoints prefix image asset paths in response payloads', a
       id: 'album_midnights',
       name: 'Midnights',
       year: 2022,
-      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png'
+      cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/albums/album-midnights.png',
+      kind: 'album'
     }
   });
   assert.deepEqual(songResult.body, {

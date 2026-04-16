@@ -57,7 +57,9 @@
 - `GET /home`
 - `GET /albums`
 - `GET /albums/:id`
-- `GET /albums/:id/songs`
+- `GET /albums/:id/songs`（按版本分组的 track listing）
+- `GET /albums/:id/editions`
+- `GET /editions/:id/tracks`
 - `GET /songs`
 - `GET /songs/:id`
 - `GET /performances`
@@ -68,6 +70,14 @@
 - `GET /tours/:id/shows`
 - `GET /shows/:id`
 - `GET /shows/:id/videos`
+
+补充约定：
+
+- `GET /albums` 默认只返回 `Album.kind = 'album'` 的专辑列表（不包含用于收纳单曲的伪专辑）
+- 单曲伪专辑使用固定 id：`album_singles`，通过 `GET /albums/album_singles` 与 `GET /albums/album_singles/songs` 获取
+- `GET /albums/:id/songs` 返回 `AlbumSongSection[]`，顺序为 `isPrimary` 优先，其次按 `releaseAt` 倒序
+- 若数据库没有 editions，则 `GET /albums/:id/songs` 会退化为仅 1 个 `Standard` section（按 `songs.album_id` 查询）
+- `GET /editions/:id/tracks` 当前由 `songs` 按 `edition_id` 直接派生（不单独维护 tracks 表）
 
 空库契约：
 

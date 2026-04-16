@@ -28,6 +28,8 @@
 - `GET /albums`
 - `GET /albums/:id`
 - `GET /albums/:id/songs`
+- `GET /albums/:id/editions`
+- `GET /editions/:id/tracks`
 - `GET /songs`
 - `GET /songs/:id`
 - `GET /performances`
@@ -59,6 +61,10 @@
 - `types/era.ts` 承担 Era 展厅的主类型出口
 - 实际时间字段统一使用时间戳
 - `Song` 支持可选 `mv`
+- `Song.durationMs` 用于存储歌曲时长（毫秒，可选）
+- `Album.kind` 用于区分专辑与特殊集合（例如 `singles`）
+- `AlbumEdition` 用于描述专辑版本；`AlbumTrack` 由 `Song.edition_id + disc_no + track_no + display_name` 组合派生
+- `GET /albums/:id/songs` 直接返回按版本分组后的 `AlbumSongSection[]`
 - `Performance.domain` 区分资料馆内容与巡演语境
 - `Show` 已经并入票务/场馆字段，不再单独维护 `ShowGuide`
 

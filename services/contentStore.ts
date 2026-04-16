@@ -43,10 +43,17 @@ export interface SongListItem extends Song {
   hasMv: boolean;
 }
 
+const SPECIAL_ALBUM_NAMES: Record<string, string> = {
+  album_singles: '单曲'
+};
+
 function buildSongListItems(songs: Song[], albums: Album[]): SongListItem[] {
   return songs.map((song) => ({
     ...song,
-    albumName: albums.find((album) => album.id === song.albumId)?.name ?? song.albumId,
+    albumName:
+      albums.find((album) => album.id === song.albumId)?.name ??
+      SPECIAL_ALBUM_NAMES[song.albumId] ??
+      song.albumId,
     hasMv: Boolean(song.mv)
   }));
 }
@@ -88,8 +95,8 @@ export async function loadFavoriteSongListPage(favoriteIds: string[]) {
 }
 
 export async function loadAlbumDetailPage(id: string) {
-  const [album, songs] = await Promise.all([loadAlbumDetail(id), loadAlbumSongs(id)]);
-  return { album, songs };
+  const [album, sections] = await Promise.all([loadAlbumDetail(id), loadAlbumSongs(id)]);
+  return { album, sections };
 }
 
 export function loadSongDetail(id: string) {

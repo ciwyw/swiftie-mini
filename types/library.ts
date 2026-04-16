@@ -25,7 +25,7 @@ export interface Documentary {
 }
 
 export interface LibraryHubEntry {
-  id: 'albums' | 'songs' | 'performances' | 'documentaries' | 'favorites';
+  id: 'albums' | 'singles' | 'songs' | 'performances' | 'documentaries' | 'favorites';
   title: string;
   subtitle: string;
   route: string;
