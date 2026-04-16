@@ -1,4 +1,4 @@
-import { Album } from '../types/album';
+import { Album, AlbumEdition, AlbumSongSection, AlbumTrack } from '../types/album';
 import { EraExhibit } from '../types/era';
 import { HomeFeed } from '../types/home';
 import { Documentary, Performance } from '../types/library';
@@ -23,7 +23,15 @@ export function fetchSongs() {
 }
 
 export function fetchAlbumSongs(id: string) {
-  return request<Song[]>(`/albums/${id}/songs`);
+  return request<AlbumSongSection[]>(`/albums/${id}/songs`);
+}
+
+export function fetchAlbumEditions(id: string) {
+  return request<AlbumEdition[]>(`/albums/${id}/editions`);
+}
+
+export function fetchEditionTracks(id: string) {
+  return request<AlbumTrack[]>(`/editions/${id}/tracks`);
 }
 
 export function fetchSongDetail(id: string) {

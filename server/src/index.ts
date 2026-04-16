@@ -25,6 +25,7 @@ interface AlbumRecord {
   cover: string;
   announcement_at: number | null;
   release_at: number | null;
+  kind: 'album' | 'singles';
 }
 
 interface NewsRecord {
@@ -56,8 +57,34 @@ interface SongRecord {
   id: string;
   name: string;
   album_id: string;
+  duration_ms: number | null;
   lyrics_json: string;
   mv_json: string | null;
+}
+
+interface EditionRecord {
+  id: string;
+  album_id: string;
+  name: string;
+  is_primary: 0 | 1;
+  release_at: number | null;
+}
+
+interface AlbumSongSectionRecord {
+  edition_id: string;
+  edition_album_id: string;
+  edition_name: string;
+  edition_is_primary: 0 | 1;
+  edition_release_at: number | null;
+  song_id: string | null;
+  song_name: string | null;
+  song_album_id: string | null;
+  song_disc_no: number | null;
+  song_track_no: number | null;
+  song_display_name: string | null;
+  song_duration_ms: number | null;
+  song_lyrics_json: string | null;
+  song_mv_json: string | null;
 }
 
 interface PerformanceRecord {
@@ -399,7 +426,8 @@ function mapAlbum(record: AlbumRecord) {
     year: record.year,
     cover: record.cover,
     announcementAt: record.announcement_at ?? undefined,
-    releaseAt: record.release_at ?? undefined
+    releaseAt: record.release_at ?? undefined,
+    kind: record.kind
   };
 }
 
@@ -408,8 +436,35 @@ function mapSong(record: SongRecord) {
     id: record.id,
     name: record.name,
     albumId: record.album_id,
+    durationMs: typeof record.duration_ms === 'number' ? record.duration_ms : undefined,
     lyrics: parseJsonArray(record.lyrics_json),
     mv: parseJsonObject(record.mv_json) ?? undefined
+  };
+}
+
+function mapEdition(record: EditionRecord) {
+  return {
+    id: record.id,
+    albumId: record.album_id,
+    name: record.name,
+    isPrimary: record.is_primary === 1,
+    releaseAt: record.release_at ?? undefined
+  };
+}
+
+function mapTrack(record: {
+  edition_id: string;
+  song_id: string;
+  disc_no: number;
+  track_no: number | null;
+  display_name: string | null;
+}) {
+  return {
+    editionId: record.edition_id,
+    songId: record.song_id,
+    discNo: record.disc_no,
+    trackNo: record.track_no ?? undefined,
+    displayName: record.display_name ?? undefined
   };
 }
 
@@ -526,7 +581,7 @@ function mapVideo(record: VideoRecord) {
 
 async function handleHome(db: D1DatabaseLike): Promise<Response> {
   const [albums, tours, eras, news] = await Promise.all([
-    queryAll<AlbumRecord>(db, 'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'),
+    queryAll<AlbumRecord>(db, "SELECT id, name, year, cover, announcement_at, release_at, kind FROM albums WHERE kind = 'album' ORDER BY year ASC, id ASC"),
     queryAll<TourRecord>(db, 'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'),
     queryAll<EraRecord>(db, 'SELECT id, album_id, era_name, cover, theme_color, tagline, hero_intro, signature_looks_json, milestones_json, era_honors_json, revisit_performance_ids_json FROM eras ORDER BY rowid ASC'),
     queryAll<NewsRecord>(db, 'SELECT id, title, published_at, summary, tag, action_type, action_route, action_query FROM news_items ORDER BY published_at DESC, id ASC LIMIT 3')
@@ -564,19 +619,162 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
   const albumSongsMatch = pathname.match(/^\/albums\/([^/]+)\/songs$/);
   if (albumSongsMatch) {
-    const rows = await queryAll<SongRecord>(
+    const albumId = albumSongsMatch[1];
+    const editions = await queryAll<EditionRecord>(
       env.DB,
-      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE album_id = ? ORDER BY id ASC',
-      albumSongsMatch[1]
+      'SELECT id, album_id, name, is_primary, release_at FROM editions WHERE album_id = ? ORDER BY is_primary DESC, release_at DESC, id ASC',
+      albumId
     );
-    return success(rows.map(mapSong));
+
+    if (editions.length > 0) {
+      const rows = await queryAll<AlbumSongSectionRecord>(
+        env.DB,
+        `SELECT
+          e.id AS edition_id,
+          e.album_id AS edition_album_id,
+          e.name AS edition_name,
+          e.is_primary AS edition_is_primary,
+          e.release_at AS edition_release_at,
+          s.id AS song_id,
+          s.name AS song_name,
+          s.album_id AS song_album_id,
+          s.disc_no AS song_disc_no,
+          s.track_no AS song_track_no,
+          s.display_name AS song_display_name,
+          s.duration_ms AS song_duration_ms,
+          s.lyrics_json AS song_lyrics_json,
+          s.mv_json AS song_mv_json
+        FROM editions e
+        LEFT JOIN songs s ON s.edition_id = e.id
+        WHERE e.album_id = ?
+        ORDER BY e.is_primary DESC, e.release_at DESC, e.id ASC, s.disc_no ASC, s.track_no ASC, s.id ASC`,
+        albumId
+      );
+
+      const sectionMap = new Map<
+        string,
+        {
+          edition: ReturnType<typeof mapEdition>;
+          tracks: Array<ReturnType<typeof mapTrack> & { song: ReturnType<typeof mapSong> }>;
+        }
+      >();
+
+      for (const edition of editions) {
+        sectionMap.set(edition.id, { edition: mapEdition(edition), tracks: [] });
+      }
+
+      for (const record of rows) {
+        const section = sectionMap.get(record.edition_id);
+        if (!section) {
+          continue;
+        }
+
+        if (!record.song_id) {
+          continue;
+        }
+
+        section.tracks.push({
+          editionId: record.edition_id,
+          songId: record.song_id,
+          discNo: record.song_disc_no ?? 1,
+          trackNo: record.song_track_no ?? undefined,
+          displayName: record.song_display_name ?? undefined,
+          song: mapSong({
+            id: record.song_id,
+            name: record.song_name ?? '',
+            album_id: record.song_album_id ?? albumId,
+            duration_ms: record.song_duration_ms,
+            lyrics_json: record.song_lyrics_json ?? '[]',
+            mv_json: record.song_mv_json
+          })
+        });
+      }
+
+      const primaryEditionId = editions.find((edition) => edition.is_primary === 1)?.id ?? editions[0]?.id;
+      if (primaryEditionId) {
+        const missingEditionSongs = await queryAll<{
+          id: string;
+          name: string;
+          album_id: string;
+          duration_ms: number | null;
+          lyrics_json: string;
+          mv_json: string | null;
+          disc_no: number;
+          track_no: number | null;
+          display_name: string | null;
+        }>(
+          env.DB,
+          `SELECT id, name, album_id, duration_ms, lyrics_json, mv_json, disc_no, track_no, display_name
+          FROM songs
+          WHERE album_id = ? AND (edition_id IS NULL OR edition_id = '')
+          ORDER BY disc_no ASC, track_no ASC, id ASC`,
+          albumId
+        );
+
+        const primarySection = sectionMap.get(primaryEditionId);
+        if (primarySection) {
+          for (const song of missingEditionSongs) {
+            primarySection.tracks.push({
+              editionId: primaryEditionId,
+              songId: song.id,
+              discNo: song.disc_no,
+              trackNo: song.track_no ?? undefined,
+              displayName: song.display_name ?? undefined,
+              song: mapSong(song)
+            });
+          }
+        }
+      }
+
+      return success([...sectionMap.values()]);
+    }
+
+    const songs = await queryAll<SongRecord>(
+      env.DB,
+      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id = ? ORDER BY id ASC',
+      albumId
+    );
+    if (songs.length === 0) {
+      return success([]);
+    }
+
+    const fallbackEdition = {
+      id: `edition_${albumId}_standard`,
+      album_id: albumId,
+      name: 'Standard',
+      is_primary: 1 as const,
+      release_at: null
+    };
+    return success([
+      {
+        edition: mapEdition(fallbackEdition),
+        tracks: songs.map((song) => ({
+          editionId: fallbackEdition.id,
+          songId: song.id,
+          discNo: 1,
+          trackNo: undefined,
+          displayName: undefined,
+          song: mapSong(song)
+        }))
+      }
+    ]);
+  }
+
+  const albumEditionsMatch = pathname.match(/^\/albums\/([^/]+)\/editions$/);
+  if (albumEditionsMatch) {
+    const rows = await queryAll<EditionRecord>(
+      env.DB,
+      'SELECT id, album_id, name, is_primary, release_at FROM editions WHERE album_id = ? ORDER BY is_primary DESC, release_at DESC, id ASC',
+      albumEditionsMatch[1]
+    );
+    return success(rows.map(mapEdition));
   }
 
   const albumMatch = pathname.match(/^\/albums\/([^/]+)$/);
   if (albumMatch) {
     const record = await queryFirst<AlbumRecord>(
       env.DB,
-      'SELECT id, name, year, cover, announcement_at, release_at FROM albums WHERE id = ?',
+      'SELECT id, name, year, cover, announcement_at, release_at, kind FROM albums WHERE id = ?',
       albumMatch[1]
     );
     return success(record ? mapAlbum(record) : null);
@@ -585,7 +783,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/albums') {
     const rows = await queryAll<AlbumRecord>(
       env.DB,
-      'SELECT id, name, year, cover, announcement_at, release_at FROM albums ORDER BY year ASC, id ASC'
+      "SELECT id, name, year, cover, announcement_at, release_at, kind FROM albums WHERE kind = 'album' ORDER BY year ASC, id ASC"
     );
     return success(rows.map(mapAlbum));
   }
@@ -593,7 +791,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/songs') {
     const rows = await queryAll<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs ORDER BY id ASC'
+      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs ORDER BY id ASC'
     );
     return success(rows.map(mapSong));
   }
@@ -602,10 +800,26 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (songMatch) {
     const record = await queryFirst<SongRecord>(
       env.DB,
-      'SELECT id, name, album_id, lyrics_json, mv_json FROM songs WHERE id = ?',
+      'SELECT id, name, album_id, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?',
       songMatch[1]
     );
     return success(record ? mapSong(record) : null);
+  }
+
+  const editionTracksMatch = pathname.match(/^\/editions\/([^/]+)\/tracks$/);
+  if (editionTracksMatch) {
+    const rows = await queryAll<{
+      edition_id: string;
+      song_id: string;
+      disc_no: number;
+      track_no: number | null;
+      display_name: string | null;
+    }>(
+      env.DB,
+      'SELECT edition_id, id AS song_id, disc_no, track_no, display_name FROM songs WHERE edition_id = ? ORDER BY disc_no ASC, track_no ASC, id ASC',
+      editionTracksMatch[1]
+    );
+    return success(rows.map(mapTrack));
   }
 
   if (pathname === '/performances') {

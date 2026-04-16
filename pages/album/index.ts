@@ -1,5 +1,5 @@
 import { loadAlbumDetailPage, loadAlbumList } from '../../services/contentStore';
-import { Album } from '../../types/album';
+import { Album, AlbumSongSection } from '../../types/album';
 import { Song } from '../../types/song';
 import { ROUTES } from '../../utils/constants';
 
@@ -7,10 +7,24 @@ interface AlbumSongItem extends Song {
   hasMv: boolean;
 }
 
+interface AlbumSongTrackItem {
+  editionId: string;
+  songId: string;
+  discNo?: number;
+  trackNo?: number;
+  displayName?: string;
+  song: AlbumSongItem;
+}
+
+interface AlbumSongSectionItem {
+  edition: AlbumSongSection['edition'];
+  tracks: AlbumSongTrackItem[];
+}
+
 interface AlbumData {
   albums: Album[];
   album: Album | null;
-  songs: AlbumSongItem[];
+  sections: AlbumSongSectionItem[];
   currentAlbumId: string;
   hasError: boolean;
   isLoading: boolean;
@@ -43,7 +57,7 @@ Page({
   data: {
     albums: [],
     album: null,
-    songs: [],
+    sections: [],
     currentAlbumId: '',
     hasError: false,
     isLoading: false,
@@ -67,7 +81,7 @@ Page({
         this.setData({
           albums: await loadAlbumList(),
           album: null,
-          songs: [],
+          sections: [],
           hasError: false,
           isLoading: false,
           loadError: false
@@ -76,7 +90,7 @@ Page({
         this.setData({
           albums: [],
           album: null,
-          songs: [],
+          sections: [],
           hasError: false,
           isLoading: false,
           loadError: true
@@ -86,12 +100,12 @@ Page({
     }
 
     try {
-      const { album, songs } = await loadAlbumDetailPage(albumId);
+      const { album, sections } = await loadAlbumDetailPage(albumId);
       if (!album) {
         this.setData({
           albums: [],
           album: null,
-          songs: [],
+          sections: [],
           hasError: true,
           isLoading: false,
           loadError: false
@@ -102,9 +116,19 @@ Page({
       this.setData({
         albums: [],
         album,
-        songs: songs.map((song) => ({
-          ...song,
-          hasMv: Boolean(song.mv)
+        sections: sections.map((section) => ({
+          edition: section.edition,
+          tracks: section.tracks.map((track) => ({
+            editionId: track.editionId,
+            songId: track.songId,
+            discNo: track.discNo,
+            trackNo: track.trackNo,
+            displayName: track.displayName,
+            song: {
+              ...track.song,
+              hasMv: Boolean(track.song.mv)
+            }
+          }))
         })),
         hasError: false,
         isLoading: false,
@@ -114,7 +138,7 @@ Page({
       this.setData({
         albums: [],
         album: null,
-        songs: [],
+        sections: [],
         hasError: false,
         isLoading: false,
         loadError: true

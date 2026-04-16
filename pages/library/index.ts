@@ -5,8 +5,16 @@ interface LibraryData {
   entries: LibraryHubEntry[];
 }
 
+const SINGLE_ALBUM_ID = 'album_singles';
+
 const LIBRARY_HUB_ENTRIES: LibraryHubEntry[] = [
   { id: 'albums', title: '专辑', subtitle: '按时代浏览全部专辑', route: ROUTES.album },
+  {
+    id: 'singles',
+    title: '单曲',
+    subtitle: '非专辑单曲与特别发行',
+    route: `${ROUTES.album}?id=${SINGLE_ALBUM_ID}`
+  },
   { id: 'songs', title: '歌曲', subtitle: '完整歌曲列表与 MV 标记', route: ROUTES.songList },
   {
     id: 'performances',
