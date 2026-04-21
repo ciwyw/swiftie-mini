@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { clearContentStoreCache } from '../services/contentStore';
+import { clearContentStoreCache, loadSinglesListPage } from '../services/contentStore';
 import { ROUTES } from '../utils/constants';
 
 const storage = new Map<string, unknown>();
@@ -123,6 +123,7 @@ test('song list page loads songs from remote interfaces and maps album names wit
                 id: 'song_carolina',
                 name: 'Carolina',
                 year: 2022,
+                artistCredit: 'Taylor Swift',
                 lyrics: []
               }
             ]
@@ -175,12 +176,86 @@ test('song list page loads songs from remote interfaces and maps album names wit
     },
     {
       id: 'song_carolina',
-      albumName: '2022',
+      albumName: 'Taylor Swift',
       hasMv: false
     }
   ]);
   assert.equal(pageConfig.data.isLoading, false);
   assert.equal(pageConfig.data.loadError, false);
+});
+
+test('singles list data prefers artist credit over release year for standalone songs', async () => {
+  const requestUrls: string[] = [];
+  clearContentStoreCache();
+
+  (globalThis as typeof globalThis & { wx?: unknown }).wx = {
+    ...(globalThis as unknown as { wx: typeof wx }).wx,
+    request(options: {
+      url: string;
+      success: (result: { statusCode: number; data: unknown }) => void;
+      fail: (error: Error) => void;
+    }) {
+      requestUrls.push(options.url);
+      if (options.url.endsWith('/singles')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              {
+                id: 'song_the_joker_and_the_queen',
+                name: 'The Joker and the Queen',
+                year: 2022,
+                artistCredit: 'Ed Sheeran feat. Taylor Swift',
+                lyrics: []
+              },
+              {
+                id: 'song_carolina',
+                name: 'Carolina',
+                year: 2022,
+                artistCredit: 'Taylor Swift',
+                lyrics: []
+              }
+            ]
+          }
+        });
+        return;
+      }
+
+      if (options.url.endsWith('/albums')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: []
+          }
+        });
+        return;
+      }
+
+      options.fail(new Error(`Unhandled request: ${options.url}`));
+    }
+  } as unknown as typeof wx;
+
+  const songs = await loadSinglesListPage();
+
+  assert.deepEqual(requestUrls.map((url) => url.replace(/^https?:\/\/[^/]+/, '')), ['/singles', '/albums']);
+  assert.deepEqual(songs.map((item) => ({
+    id: item.id,
+    albumName: item.albumName,
+    hasMv: item.hasMv
+  })), [
+    {
+      id: 'song_the_joker_and_the_queen',
+      albumName: 'Ed Sheeran feat. Taylor Swift',
+      hasMv: false
+    },
+    {
+      id: 'song_carolina',
+      albumName: 'Taylor Swift',
+      hasMv: false
+    }
+  ]);
 });
 
 test('favorites page loads remote songs and keeps local favorite order', async () => {
@@ -214,7 +289,7 @@ test('favorites page loads remote songs and keeps local favorite order', async (
           data: {
             code: 0,
             data: [
-              { id: 'song_carolina', name: 'Carolina', year: 2022, lyrics: [] },
+              { id: 'song_carolina', name: 'Carolina', year: 2022, artistCredit: 'Taylor Swift', lyrics: [] },
               { id: 'song_anti_hero', name: 'Anti-Hero', albumId: 'album_midnights', lyrics: [], mv: { title: 'Anti-Hero', cover: 'https://cdn.example/anti-hero.png', source: 'YouTube', duration: '5:10' } },
               { id: 'song_all_too_well', name: 'All Too Well', albumId: 'album_red', lyrics: [], mv: { title: 'All Too Well', cover: 'https://cdn.example/atw.png', source: 'YouTube', duration: '14:56' } }
             ]
@@ -256,7 +331,7 @@ test('favorites page loads remote songs and keeps local favorite order', async (
   })), [
     {
       id: 'song_carolina',
-      albumName: '2022',
+      albumName: 'Taylor Swift',
       hasMv: false
     },
     {
@@ -277,7 +352,10 @@ test('favorites page loads remote songs and keeps local favorite order', async (
 test('song list and favorites templates do not depend on local-only placeholder copy', () => {
   const songListTemplate = readFileSync(new URL('../pages/song-list/index.wxml', import.meta.url), 'utf8');
   const favoritesTemplate = readFileSync(new URL('../pages/favorites/index.wxml', import.meta.url), 'utf8');
+  const albumTemplate = readFileSync(new URL('../pages/album/index.wxml', import.meta.url), 'utf8');
 
   assert.match(songListTemplate, /wx:for="{{songs}}"/);
   assert.match(favoritesTemplate, /wx:for="{{favorites}}"/);
+  assert.doesNotMatch(albumTemplate, /track\.displayName/);
+  assert.match(albumTemplate, /track\.song\.name/);
 });

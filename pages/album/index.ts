@@ -12,7 +12,6 @@ interface AlbumSongTrackItem {
   songId: string;
   discNo?: number;
   trackNo?: number;
-  displayName?: string;
   song: AlbumSongItem;
 }
 
@@ -123,7 +122,6 @@ Page({
             songId: track.songId,
             discNo: track.discNo,
             trackNo: track.trackNo,
-            displayName: track.displayName,
             song: {
               ...track.song,
               hasMv: Boolean(track.song.mv)

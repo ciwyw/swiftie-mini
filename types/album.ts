@@ -23,7 +23,6 @@ export interface AlbumTrack {
   songId: string;
   discNo?: number;
   trackNo?: number;
-  displayName?: string;
   song?: Song;
 }
 

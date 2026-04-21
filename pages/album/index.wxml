@@ -35,7 +35,7 @@
           bindtap="goSong"
         >
           <view class="song-copy">
-            <text class="song-name">{{track.displayName || track.song.name}}</text>
+            <text class="song-name">{{track.song.name}}</text>
             <text wx:if="{{track.song.hasMv}}" class="song-tag">MV</text>
           </view>
           <text class="song-arrow">></text>

@@ -144,11 +144,12 @@ test('song and album endpoints prefix image asset paths in response payloads', a
         release_at: null,
         kind: 'album'
       },
-      'SELECT id, name, album_id, year, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?': {
+      'SELECT id, name, album_id, year, artist_credit, duration_ms, lyrics_json, mv_json FROM songs WHERE id = ?': {
         id: 'song_anti_hero',
         name: 'Anti-Hero',
         album_id: 'album_midnights',
         year: null,
+        artist_credit: null,
         duration_ms: null,
         lyrics_json: '[]',
         mv_json: JSON.stringify({
@@ -188,6 +189,94 @@ test('song and album endpoints prefix image asset paths in response payloads', a
         duration: '5:10'
       }
     }
+  });
+});
+
+test('singles endpoint returns artist credit for standalone songs', async () => {
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, name, album_id, year, artist_credit, duration_ms, lyrics_json, mv_json FROM songs WHERE album_id IS NULL ORDER BY year ASC, id ASC': {
+        results: [
+          {
+            id: 'song_carolina',
+            name: 'Carolina',
+            album_id: null,
+            year: 2022,
+            artist_credit: 'Taylor Swift',
+            duration_ms: 264000,
+            lyrics_json: '[]',
+            mv_json: null
+          },
+          {
+            id: 'song_the_joker_and_the_queen',
+            name: 'The Joker and the Queen',
+            album_id: null,
+            year: 2022,
+            artist_credit: 'Ed Sheeran feat. Taylor Swift',
+            duration_ms: 185000,
+            lyrics_json: '[]',
+            mv_json: null
+          }
+        ]
+      }
+    })
+  };
+
+  const { response, body } = await requestJson('/singles', env);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(body, {
+    code: 0,
+    data: [
+      {
+        id: 'song_carolina',
+        name: 'Carolina',
+        year: 2022,
+        artistCredit: 'Taylor Swift',
+        durationMs: 264000,
+        lyrics: []
+      },
+      {
+        id: 'song_the_joker_and_the_queen',
+        name: 'The Joker and the Queen',
+        year: 2022,
+        artistCredit: 'Ed Sheeran feat. Taylor Swift',
+        durationMs: 185000,
+        lyrics: []
+      }
+    ]
+  });
+});
+
+test('edition tracks endpoint no longer exposes display names', async () => {
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT edition_id, id AS song_id, disc_no, track_no FROM songs WHERE edition_id = ? ORDER BY disc_no ASC, track_no ASC, id ASC': {
+        results: [
+          {
+            edition_id: 'edition_midnights_standard',
+            song_id: 'song_lavender_haze',
+            disc_no: 1,
+            track_no: 1
+          }
+        ]
+      }
+    })
+  };
+
+  const { response, body } = await requestJson('/editions/edition_midnights_standard/tracks', env);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(body, {
+    code: 0,
+    data: [
+      {
+        editionId: 'edition_midnights_standard',
+        songId: 'song_lavender_haze',
+        discNo: 1,
+        trackNo: 1
+      }
+    ]
   });
 });
 
