@@ -1,5 +1,6 @@
 import { loadPerformances } from '../../services/contentStore';
 import { Performance } from '../../types/library';
+import { ROUTES } from '../../utils/constants';
 
 interface PerformanceData {
   performances: Performance[];
@@ -8,23 +9,7 @@ interface PerformanceData {
 }
 
 interface PerformanceCardDataset {
-  title: string;
-  subtitle: string;
-  meta: string;
-  summary: string;
-}
-
-function showInfoModal(title: string, lines: Array<string | undefined>) {
-  const modal = wx as typeof wx & {
-    showModal(options: { title: string; content: string; showCancel: boolean; confirmText: string }): void;
-  };
-
-  modal.showModal({
-    title,
-    content: lines.filter((line): line is string => Boolean(line)).join('\n'),
-    showCancel: false,
-    confirmText: '知道了'
-  });
+  id?: string;
 }
 
 Page({
@@ -44,7 +29,7 @@ Page({
     try {
       const performances = await loadPerformances();
       this.setData({
-        performances: performances.filter((item) => item.kind === 'live' && item.domain === 'library'),
+        performances,
         isLoading: false,
         loadError: false
       });
@@ -62,13 +47,11 @@ Page({
   },
 
   openPerformance(event: { currentTarget: { dataset: PerformanceCardDataset } }) {
-    const { title, subtitle, meta, summary } = event.currentTarget.dataset;
-    showInfoModal('演出信息', [
-      title,
-      subtitle,
-      meta,
-      summary,
-      '暂未接入完整演出页，这里先作为可点击入口。'
-    ]);
+    const { id } = event.currentTarget.dataset;
+    if (!id) {
+      return;
+    }
+
+    wx.navigateTo({ url: `${ROUTES.videoPlayer}?id=${id}` });
   }
 });

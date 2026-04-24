@@ -1,0 +1,24 @@
+.section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.section-subtitle,
+.video-meta {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #667085;
+}
+
+.player-card {
+  margin-top: 20rpx;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 24rpx;
+  background: #000000;
+}

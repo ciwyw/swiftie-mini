@@ -435,3 +435,45 @@ test('show endpoints expose opening acts and normalize surprise songs without so
   assert.deepEqual(detailResult.body, { code: 0, data: expectedShow });
   assert.deepEqual(listResult.body, { code: 0, data: [expectedShow] });
 });
+
+test('performance endpoints expose playable video records without legacy metadata fields', async () => {
+  const performanceRecord = {
+    id: 'performance_red_cma_2013',
+    title: 'Red',
+    song_ids_json: JSON.stringify(['song_red']),
+    event_name: 'The 47th Annual CMA Awards',
+    cover: null,
+    duration: '03:28',
+    video_uri: '/live/01_Taylor_Swift_-_Red_The_47th_Annual_CMA_Awards_2013_-_HDTV.mp4'
+  };
+
+  const env = {
+    DB: new QueryMapDb({
+      'SELECT id, title, song_ids_json, event_name, cover, duration, video_uri FROM live_videos ORDER BY id ASC': {
+        results: [performanceRecord]
+      },
+      'SELECT id, title, song_ids_json, event_name, cover, duration, video_uri FROM live_videos WHERE id = ?': performanceRecord
+    })
+  };
+
+  const listResult = await requestJson('/performances', env);
+  const detailResult = await requestJson('/performances/performance_red_cma_2013', env);
+
+  const expectedPerformance = {
+    id: 'performance_red_cma_2013',
+    title: 'Red',
+    songIds: ['song_red'],
+    eventName: 'The 47th Annual CMA Awards',
+    duration: '03:28',
+    videoUri: '/live/01_Taylor_Swift_-_Red_The_47th_Annual_CMA_Awards_2013_-_HDTV.mp4'
+  };
+
+  assert.deepEqual(listResult.body, {
+    code: 0,
+    data: [expectedPerformance]
+  });
+  assert.deepEqual(detailResult.body, {
+    code: 0,
+    data: expectedPerformance
+  });
+});

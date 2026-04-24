@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { clearContentStoreCache } from '../services/contentStore';
+import { ROUTES } from '../utils/constants';
+
+const VIDEO_PLAYER_ROUTE =
+  (ROUTES as typeof ROUTES & { videoPlayer?: string }).videoPlayer ?? '/pages/video/player/index';
 
 test('era detail page controller loads remote archive state and opens honor/revisit interactions', async () => {
   type EraDetailPageConfig = {
@@ -18,17 +22,7 @@ test('era detail page controller loads remote archive state and opens honor/revi
     goRoute: (event: { currentTarget: { dataset: { route?: string; query?: string } } }) => void;
     openHonorSheet: () => void;
     closeHonorSheet: () => void;
-    openRevisitItem: (event: {
-      currentTarget: {
-        dataset: {
-          kind: 'live' | 'interview' | 'special';
-          title: string;
-          subtitle?: string;
-          meta?: string;
-          summary?: string;
-        };
-      };
-    }) => void;
+    openRevisitItem: (event: { currentTarget: { dataset: { id?: string } } }) => void;
   };
 
   clearContentStoreCache();
@@ -39,12 +33,6 @@ test('era detail page controller loads remote archive state and opens honor/revi
   };
   const originalPage = runtimeGlobal.Page;
   const originalWx = runtimeGlobal.wx;
-  const showModalCalls: Array<{
-    title: string;
-    content: string;
-    showCancel: boolean;
-    confirmText: string;
-  }> = [];
   const navigateToCalls: Array<{ url: string }> = [];
   const requestUrls: string[] = [];
   let pageConfig: EraDetailPageConfig | undefined;
@@ -141,27 +129,19 @@ test('era detail page controller loads remote archive state and opens honor/revi
       id: 'performance_iheart_anti_hero',
       title: 'Anti-Hero',
       songIds: ['song_anti_hero'],
-      kind: 'live',
-      domain: 'library',
       eventName: 'iHeartRadio Music Awards',
-      year: 2023,
       cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png',
-      source: 'FOX',
       duration: '4:27',
-      summary: 'A televised performance built around the Midnights visual language.'
+      videoUri: '/live/anti-hero-live.mp4'
     },
     {
       id: 'performance_midnights_release_interview',
       title: 'Midnights Release Week Interview',
       songIds: ['song_anti_hero'],
-      kind: 'interview',
-      domain: 'library',
       eventName: 'iHeartRadio Interview',
-      year: 2022,
       cover: 'https://pub-2fe074c99d71462789f5f5161ee1d03c.r2.dev/assets/images/ui/avatar-placeholder.png',
-      source: 'iHeartRadio',
       duration: '12:40',
-      summary: 'A release-week conversation focused on the album’s sleepless-night concept.'
+      videoUri: '/live/midnights-interview.mp4'
     }
   ];
 
@@ -202,14 +182,6 @@ test('era detail page controller loads remote archive state and opens honor/revi
 
       options.fail?.(new Error(`Unhandled request: ${options.url}`));
     },
-    showModal(options: {
-      title: string;
-      content: string;
-      showCancel: boolean;
-      confirmText: string;
-    }) {
-      showModalCalls.push(options);
-    }
   } as unknown as typeof wx;
 
   try {
@@ -243,25 +215,13 @@ test('era detail page controller loads remote archive state and opens honor/revi
 
     pageConfig.openRevisitItem({
       currentTarget: {
-        dataset: {
-          kind: 'interview',
-          title: 'Midnights Release Week Interview',
-          subtitle: 'iHeartRadio Interview · 2022',
-          meta: 'iHeartRadio · 12:40',
-          summary: 'A release-week conversation focused on the album’s sleepless-night concept.'
-        }
+        dataset: { id: 'performance_midnights_release_interview' }
       }
     });
 
-    assert.deepEqual(navigateToCalls, [{ url: '/pages/album/index?id=album_midnights' }]);
-    assert.deepEqual(showModalCalls, [
-      {
-        title: '时代回看',
-        content:
-          '采访\nMidnights Release Week Interview\niHeartRadio Interview · 2022\niHeartRadio · 12:40\nA release-week conversation focused on the album’s sleepless-night concept.\n暂未接入完整内容页，这里先作为可点击入口。',
-        showCancel: false,
-        confirmText: '知道了'
-      }
+    assert.deepEqual(navigateToCalls, [
+      { url: '/pages/album/index?id=album_midnights' },
+      { url: `${VIDEO_PLAYER_ROUTE}?id=performance_midnights_release_interview` }
     ]);
 
     await pageConfig.onLoad.call(pageConfig, {});

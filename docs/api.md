@@ -24,6 +24,7 @@
 - `pages/show/detail/index?id=<showId>`：场次详情
 - `pages/guide/index?tourId=<tourId>`：抢票助手
 - `pages/video/upload/index?showId=<showId>`：上传视频
+- `pages/video/player/index?id=<performanceId>`：资料馆视频播放
 
 说明：
 
@@ -64,6 +65,7 @@
 - `GET /singles`
 - `GET /songs/:id`
 - `GET /performances`
+- `GET /performances/:id`
 - `GET /documentaries`
 - `GET /eras/:id`
 - `GET /tours`
@@ -80,6 +82,7 @@
 - `GET /albums/:id/songs` 返回 `AlbumSongSection[]`，顺序为 `isPrimary` 优先，其次按 `releaseAt` 倒序
 - 若数据库没有 editions，则 `GET /albums/:id/songs` 会退化为仅 1 个 `Standard` section（按 `songs.album_id` 查询）
 - `GET /editions/:id/tracks` 当前由 `songs` 按 `edition_id` 直接派生（不单独维护 tracks 表）
+- `GET /performances` 和 `GET /performances/:id` 返回 `videoUri` 相对路径，前端负责补齐 R2 域名
 
 空库契约：
 

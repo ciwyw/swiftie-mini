@@ -74,24 +74,20 @@
 
     <view class="card section-card" wx:if="{{exhibit.performances.length}}">
       <text class="section-title">时代回看</text>
-      <text class="section-subtitle">只保留这个 Era 最值得重看的 live、采访和特别内容。</text>
+      <text class="section-subtitle">只保留这个 Era 最值得重看的视频内容。</text>
       <view
         class="revisit-card tappable-card"
         wx:for="{{exhibit.performances}}"
         wx:key="id"
-        data-kind="{{item.kind}}"
-        data-title="{{item.title}}"
-        data-subtitle="{{item.eventName}} · {{item.year}}"
-        data-meta="{{item.source}} · {{item.duration}}"
-        data-summary="{{item.summary}}"
+        data-id="{{item.id}}"
         bindtap="openRevisitItem"
       >
-        <image class="revisit-cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <image wx:if="{{item.cover}}" class="revisit-cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <view wx:else class="revisit-cover"></view>
         <view class="revisit-content">
-          <text class="revisit-tag">{{item.kind === 'live' ? 'Live' : item.kind === 'interview' ? '采访' : '特别节目'}}</text>
           <text class="revisit-title">{{item.title}}</text>
-          <text class="revisit-meta">{{item.eventName}} · {{item.year}}</text>
-          <text class="revisit-summary">{{item.summary}}</text>
+          <text class="revisit-meta">{{item.eventName}}</text>
+          <text class="revisit-summary">{{item.duration}}</text>
         </view>
       </view>
     </view>

@@ -39,6 +39,7 @@
 - `pages/performance/index`
 - `pages/documentary/index`
 - `pages/favorites/index`
+- `pages/video/player/index`
 
 ### Era 展厅页面
 
@@ -55,6 +56,7 @@
 
 - `pages/`：页面生命周期、交互和视图状态
 - `services/`：远程请求、接口封装和内容缓存层
+- `scripts/`：本地运维脚本，例如下载内容后的增量同步
 - `server/`：Cloudflare Workers 服务端与 D1 schema
 - `types/`：领域类型定义
 - `utils/storage.ts`：本地持久化读写
@@ -70,6 +72,8 @@
 - [pages/song-list/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song-list/index.ts)：歌曲列表页，远程加载全部歌曲与专辑名映射
 - [pages/favorites/index.ts](/Users/bytedance/projects/swiftie-mini/pages/favorites/index.ts)：收藏列表页，远程加载歌曲并结合本地收藏 id 过滤
 - [pages/song/index.ts](/Users/bytedance/projects/swiftie-mini/pages/song/index.ts)：歌曲详情、收藏、本地歌词展示与远程视频关联内容
+- [pages/performance/index.ts](/Users/bytedance/projects/swiftie-mini/pages/performance/index.ts)：资料馆 Live 视频列表，跳转独立播放器
+- [pages/video/player/index.ts](/Users/bytedance/projects/swiftie-mini/pages/video/player/index.ts)：独立视频播放页，按 `performanceId` 加载视频
 
 ### Era 展厅
 

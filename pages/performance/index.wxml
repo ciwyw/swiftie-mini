@@ -25,16 +25,19 @@
       class="card performance-card tappable-card"
       wx:for="{{performances}}"
       wx:key="id"
-      data-title="{{item.title}}"
-      data-subtitle="{{item.eventName}} · {{item.year}}"
-      data-meta="{{item.source}} · {{item.duration}}"
-      data-summary="{{item.summary}}"
+      data-id="{{item.id}}"
       bindtap="openPerformance"
     >
-      <text class="item-title">{{item.title}}</text>
-      <text class="item-subtitle">{{item.eventName}} · {{item.year}}</text>
-      <text class="item-summary">{{item.summary}}</text>
-      <text class="item-action">查看演出信息</text>
+      <image wx:if="{{item.cover}}" class="performance-cover" src="{{item.cover}}" mode="aspectFill"></image>
+      <view wx:else class="performance-cover performance-cover--placeholder">
+        <text class="performance-cover-label">Live</text>
+      </view>
+      <view class="performance-copy">
+        <text class="item-title">{{item.title}}</text>
+        <text class="item-subtitle">{{item.eventName}}</text>
+        <text class="item-meta">{{item.duration}}</text>
+        <text class="item-action">播放视频</text>
+      </view>
     </view>
   </block>
 </view>

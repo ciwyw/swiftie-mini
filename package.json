@@ -7,6 +7,8 @@
     "test:tour": "tsx --test tests/tour-module.test.ts",
     "test:library": "tsx --test tests/library-module.test.ts",
     "test:server": "tsx --test server/tests/index.test.ts",
+    "r2:sync:live": "bash scripts/r2-sync-live.sh",
+    "r2:sync:live-covers": "bash scripts/r2-sync-live-covers.sh",
     "server:dev": "wrangler dev --config server/wrangler.jsonc",
     "server:deploy": "wrangler deploy --config server/wrangler.jsonc",
     "server:d1:migrate:local": "wrangler d1 migrations apply swiftie-mini --local --config server/wrangler.jsonc",

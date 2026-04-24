@@ -94,14 +94,10 @@ interface PerformanceRecord {
   id: string;
   title: string;
   song_ids_json: string;
-  kind: 'live' | 'interview' | 'special';
-  domain: 'library' | 'tour';
   event_name: string;
-  year: number;
-  cover: string;
-  source: string;
+  cover: string | null;
   duration: string;
-  summary: string;
+  video_uri: string;
 }
 
 interface DocumentaryRecord {
@@ -476,14 +472,10 @@ function mapPerformance(record: PerformanceRecord) {
     id: record.id,
     title: record.title,
     songIds: parseJsonArray<string>(record.song_ids_json),
-    kind: record.kind,
-    domain: record.domain,
     eventName: record.event_name,
-    year: record.year,
-    cover: record.cover,
-    source: record.source,
+    cover: record.cover ?? undefined,
     duration: record.duration,
-    summary: record.summary
+    videoUri: record.video_uri
   };
 }
 
@@ -836,9 +828,19 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (pathname === '/performances') {
     const rows = await queryAll<PerformanceRecord>(
       env.DB,
-      'SELECT id, title, song_ids_json, kind, domain, event_name, year, cover, source, duration, summary FROM performances ORDER BY year DESC, id ASC'
+      'SELECT id, title, song_ids_json, event_name, cover, duration, video_uri FROM live_videos ORDER BY id ASC'
     );
     return success(rows.map(mapPerformance));
+  }
+
+  const performanceMatch = pathname.match(/^\/performances\/([^/]+)$/);
+  if (performanceMatch) {
+    const record = await queryFirst<PerformanceRecord>(
+      env.DB,
+      'SELECT id, title, song_ids_json, event_name, cover, duration, video_uri FROM live_videos WHERE id = ?',
+      performanceMatch[1]
+    );
+    return success(record ? mapPerformance(record) : null);
   }
 
   if (pathname === '/documentaries') {

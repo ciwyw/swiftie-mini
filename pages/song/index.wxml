@@ -48,18 +48,18 @@
         wx:key="id"
         class="video-item tappable-video-item"
         data-kind="performance"
+        data-id="{{item.id}}"
         data-title="{{item.title}}"
-        data-subtitle="{{item.eventName}} · {{item.year}}"
-        data-meta="{{item.source}} · {{item.duration}}"
-        data-summary="{{item.summary}}"
+        data-subtitle="{{item.eventName}}"
+        data-meta="{{item.duration}}"
         bindtap="openVideoEntry"
       >
         <view class="video-copy">
           <text class="video-tag">Live</text>
           <text class="video-title">{{item.title}}</text>
-          <text class="video-meta">{{item.eventName}} · {{item.year}}</text>
+          <text class="video-meta">{{item.eventName}} · {{item.duration}}</text>
         </view>
-        <text class="video-action">查看</text>
+        <text class="video-action">播放</text>
       </view>
     </view>
 

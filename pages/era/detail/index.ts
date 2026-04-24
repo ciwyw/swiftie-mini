@@ -1,5 +1,6 @@
 import { EraExhibitDetail } from '../../../types/era';
 import { loadEraDetailPage } from '../../../services/contentStore';
+import { ROUTES } from '../../../utils/constants';
 
 interface EraDetailData {
   exhibit: EraExhibitDetail | null;
@@ -22,36 +23,7 @@ interface RouteDataset {
 }
 
 interface RevisitDataset {
-  kind: 'live' | 'interview' | 'special';
-  title: string;
-  subtitle?: string;
-  meta?: string;
-  summary?: string;
-}
-
-function getRevisitKindLabel(kind: RevisitDataset['kind']) {
-  if (kind === 'interview') {
-    return '采访';
-  }
-
-  if (kind === 'special') {
-    return '特别节目';
-  }
-
-  return 'Live';
-}
-
-function showInfoModal(title: string, lines: Array<string | undefined>) {
-  const modal = wx as typeof wx & {
-    showModal(options: { title: string; content: string; showCancel: boolean; confirmText: string }): void;
-  };
-
-  modal.showModal({
-    title,
-    content: lines.filter((line): line is string => Boolean(line)).join('\n'),
-    showCancel: false,
-    confirmText: '知道了'
-  });
+  id?: string;
 }
 
 const eraDetailPageConfig = {
@@ -139,16 +111,12 @@ const eraDetailPageConfig = {
   stopSheetTap() {},
 
   openRevisitItem(this: EraDetailPageInstance, event: { currentTarget: { dataset: RevisitDataset } }) {
-    const { kind, title, subtitle, meta, summary } = event.currentTarget.dataset;
+    const { id } = event.currentTarget.dataset;
+    if (!id) {
+      return;
+    }
 
-    showInfoModal('时代回看', [
-      getRevisitKindLabel(kind),
-      title,
-      subtitle,
-      meta,
-      summary,
-      '暂未接入完整内容页，这里先作为可点击入口。'
-    ]);
+    wx.navigateTo({ url: `${ROUTES.videoPlayer}?id=${id}` });
   },
 
   retryLoad(this: EraDetailPageInstance) {

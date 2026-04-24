@@ -34,6 +34,7 @@
 - `GET /singles`
 - `GET /songs/:id`
 - `GET /performances`
+- `GET /performances/:id`
 - `GET /documentaries`
 
 ### 巡演数据
@@ -69,7 +70,10 @@
 - 非专辑单曲直接存放在 `songs`，其 `album_id / edition_id` 为空；年份落在 `songs.year`，发行署名落在 `songs.artist_credit`
 - `AlbumEdition` 用于描述专辑版本；`AlbumTrack` 由 `Song.edition_id + disc_no + track_no` 组合派生
 - `GET /albums/:id/songs` 直接返回按版本分组后的 `AlbumSongSection[]`
-- `Performance.domain` 区分资料馆内容与巡演语境
+- `Performance` 现在承接资料馆可播放视频，服务端表为 `live_videos`
+- `Performance` 核心字段为 `title / eventName / duration / videoUri`
+- `Performance.cover` 为可选字段，没有单独封面时前端使用占位样式
+- `videoUri` 在库里只存相对路径，例如 `/live/example.mp4`；前端运行时补齐 R2 域名
 - `Show` 已经并入票务/场馆字段，不再单独维护 `ShowGuide`
 
 ## 运行时远程数据层

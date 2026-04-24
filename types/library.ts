@@ -2,14 +2,10 @@ export interface Performance {
   id: string;
   title: string;
   songIds: string[];
-  kind: 'live' | 'interview' | 'special';
-  domain: 'library' | 'tour';
   eventName: string;
-  year: number;
-  cover: string;
-  source: string;
+  cover?: string;
   duration: string;
-  summary: string;
+  videoUri: string;
 }
 
 export interface Documentary {

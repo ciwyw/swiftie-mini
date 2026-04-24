@@ -1,4 +1,4 @@
-import { ROUTES } from '../utils/constants';
+import { ROUTES, prefixCdnUri } from '../utils/constants';
 import { Album } from '../types/album';
 import { Song } from '../types/song';
 import {
@@ -8,6 +8,7 @@ import {
   fetchDocumentaries,
   fetchEraDetail,
   fetchHomeFeed,
+  fetchPerformanceDetail,
   fetchPerformances,
   fetchShowDetail,
   fetchShowVideos,
@@ -117,6 +118,22 @@ export function loadPerformances() {
   return fromCache('performances', () => fetchPerformances());
 }
 
+export function loadPerformanceDetail(id: string) {
+  return fromCache(`performance:${id}`, () => fetchPerformanceDetail(id));
+}
+
+export async function loadPerformancePlayerPage(id: string) {
+  const performance = await loadPerformanceDetail(id);
+  if (!performance) {
+    return null;
+  }
+
+  return {
+    ...performance,
+    videoUrl: prefixCdnUri(performance.videoUri)
+  };
+}
+
 export function loadDocumentaries() {
   return fromCache('documentaries', () => fetchDocumentaries());
 }
@@ -137,7 +154,7 @@ export async function loadSongDetailPage(id: string) {
     album,
     mv: song.mv ?? null,
     relatedPerformances: performances
-      .filter((item) => item.kind === 'live' && item.domain === 'library' && item.songIds.includes(song.id))
+      .filter((item) => item.songIds.includes(song.id))
       .slice(0, 2)
   };
 }

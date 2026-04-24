@@ -20,6 +20,7 @@ interface SongData {
 
 interface VideoEntryDataset {
   kind: 'mv' | 'performance';
+  id?: string;
   title: string;
   subtitle?: string;
   meta?: string;
@@ -166,15 +167,18 @@ Page({
   },
 
   openVideoEntry(event: { currentTarget: { dataset: VideoEntryDataset } }) {
-    const { kind, title, subtitle, meta, summary } = event.currentTarget.dataset;
-    const isMv = kind === 'mv';
+    const { kind, id, title, subtitle, meta, summary } = event.currentTarget.dataset;
+    if (kind === 'performance' && id) {
+      wx.navigateTo({ url: `${ROUTES.videoPlayer}?id=${id}` });
+      return;
+    }
 
-    showInfoModal(isMv ? 'MV 预览' : '现场演出信息', [
+    showInfoModal('MV 预览', [
       title,
       subtitle,
       meta,
       summary,
-      isMv ? '暂未接入播放，这里先作为可点击入口。' : '暂未接入演出页，这里先作为可点击入口。'
+      '暂未接入播放，这里先作为可点击入口。'
     ]);
   },
 

@@ -46,6 +46,10 @@ export function fetchPerformances() {
   return request<Performance[]>('/performances');
 }
 
+export function fetchPerformanceDetail(id: string) {
+  return request<Performance | null>(`/performances/${id}`);
+}
+
 export function fetchDocumentaries() {
   return request<Documentary[]>('/documentaries');
 }
