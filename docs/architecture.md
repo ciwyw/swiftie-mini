@@ -56,7 +56,7 @@
 
 - `pages/`：页面生命周期、交互和视图状态
 - `services/`：远程请求、接口封装和内容缓存层
-- `scripts/`：本地运维脚本，例如下载内容后的增量同步
+- `scripts/`：本地运维脚本，例如 YouTube 下载、R2 增量同步和封面抽帧流水线
 - `server/`：Cloudflare Workers 服务端与 D1 schema
 - `types/`：领域类型定义
 - `utils/storage.ts`：本地持久化读写

@@ -116,3 +116,4 @@
 - 新增业务数据时，优先补 `types/`、`server/` schema 与接口映射
 - 页面需要新组合字段时，优先落到 `services/contentStore.ts`，而不是在页面内重复计算
 - 修改本地存储结构时，同步更新 `utils/storage.ts`、`utils/constants.ts` 和相关消费页面
+- 本地视频处理统一走 `scripts/process-live-videos.sh`，避免分别执行下载、上传和封面回填脚本

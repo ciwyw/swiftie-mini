@@ -21,6 +21,23 @@ if [[ ! -d "${SOURCE_DIR}" ]]; then
   exit 1
 fi
 
+get_remote_status_code() {
+  local url="$1"
+  local attempt
+  local status_code
+
+  for attempt in 1 2 3; do
+    status_code="$(curl -s -o /dev/null -w "%{http_code}" -I --connect-timeout 10 --max-time 20 "${url}")" && {
+      echo "${status_code}"
+      return 0
+    }
+    sleep 1
+  done
+
+  echo "Error: failed to check remote object after retries: ${url}"
+  return 1
+}
+
 files=()
 while IFS= read -r -d '' file_path; do
   files+=("${file_path}")
@@ -47,7 +64,7 @@ for file_path in "${files[@]}"; do
   object_key="${R2_PREFIX}/${file_name}"
   public_url="${PUBLIC_BASE_URL}/${object_key}"
 
-  status_code="$(curl -s -o /dev/null -w "%{http_code}" -I "${public_url}")"
+  status_code="$(get_remote_status_code "${public_url}")"
   if [[ "${status_code}" == "200" ]]; then
     echo "Skip existing: ${object_key}"
     skipped_count=$((skipped_count + 1))
