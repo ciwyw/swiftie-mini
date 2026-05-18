@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { clearContentStoreCache, loadSinglesListPage } from '../services/contentStore';
+import { clearContentStoreCache, loadAlbumList, loadSinglesListPage } from '../services/contentStore';
 import { ROUTES } from '../utils/constants';
 
 const storage = new Map<string, unknown>();
@@ -256,6 +256,51 @@ test('singles list data prefers artist credit over release year for standalone s
       hasMv: false
     }
   ]);
+});
+
+test('album list sorts releases by year from newest to oldest', async () => {
+  const requestUrls: string[] = [];
+  clearContentStoreCache();
+
+  (globalThis as typeof globalThis & { wx?: unknown }).wx = {
+    ...(globalThis as unknown as { wx: typeof wx }).wx,
+    request(options: {
+      url: string;
+      success: (result: { statusCode: number; data: unknown }) => void;
+      fail: (error: Error) => void;
+    }) {
+      requestUrls.push(options.url);
+
+      if (options.url.endsWith('/albums')) {
+        options.success({
+          statusCode: 200,
+          data: {
+            code: 0,
+            data: [
+              { id: 'album_fearless', name: 'Fearless', year: 2008, cover: 'https://cdn.example/fearless.png' },
+              { id: 'album_midnights', name: 'Midnights', year: 2022, cover: 'https://cdn.example/midnights.png' },
+              { id: 'album_red_tv', name: 'Red (Taylor\'s Version)', year: 2021, cover: 'https://cdn.example/red-tv.png' }
+            ]
+          }
+        });
+        return;
+      }
+
+      options.fail(new Error(`Unhandled request: ${options.url}`));
+    }
+  } as unknown as typeof wx;
+
+  const albums = await loadAlbumList();
+
+  assert.deepEqual(requestUrls.map((url) => url.replace(/^https?:\/\/[^/]+/, '')), ['/albums']);
+  assert.deepEqual(
+    albums.map((album) => ({ id: album.id, year: album.year })),
+    [
+      { id: 'album_midnights', year: 2022 },
+      { id: 'album_red_tv', year: 2021 },
+      { id: 'album_fearless', year: 2008 }
+    ]
+  );
 });
 
 test('favorites page loads remote songs and keeps local favorite order', async () => {

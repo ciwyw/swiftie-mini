@@ -65,7 +65,10 @@ export function loadHomeFeed() {
 }
 
 export function loadAlbumList() {
-  return fromCache('albums', () => fetchAlbums());
+  return fromCache('albums', async () => {
+    const albums = await fetchAlbums();
+    return [...albums].sort((left, right) => right.year - left.year);
+  });
 }
 
 export function loadAlbumDetail(id: string) {
