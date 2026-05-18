@@ -1,5 +1,27 @@
+.container {
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
 .list-head {
   margin-bottom: 20rpx;
+}
+
+.list-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.song-scroll {
+  height: 100%;
+}
+
+.song-list-card {
+  min-height: 100%;
+  padding-right: 72rpx;
 }
 
 .section-title {
@@ -14,6 +36,19 @@
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #666666;
+}
+
+.song-section + .song-section {
+  margin-top: 28rpx;
+}
+
+.song-section-letter {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  color: #9ca3af;
 }
 
 .song-item {
@@ -52,4 +87,31 @@
   background: #f3f4f6;
   font-size: 22rpx;
   color: #4b5563;
+}
+
+.letter-index {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  padding: 12rpx 10rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8rpx 24rpx rgba(17, 17, 17, 0.08);
+}
+
+.letter-index-item {
+  min-width: 28rpx;
+  text-align: center;
+  font-size: 18rpx;
+  line-height: 1.2;
+  color: #374151;
+}
+
+.letter-index-item-disabled {
+  color: #d1d5db;
 }

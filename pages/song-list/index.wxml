@@ -4,13 +4,41 @@
     <text class="section-subtitle">{{subtitle}}</text>
   </view>
 
-  <view class="card">
-    <view wx:for="{{songs}}" wx:key="id" class="song-item" data-id="{{item.id}}" bindtap="goSong">
-      <view class="song-copy">
-        <text class="song-name">{{item.name}}</text>
-        <text class="song-album">{{item.albumName}}</text>
+  <view class="list-shell">
+    <scroll-view class="song-scroll" scroll-y scroll-with-animation scroll-into-view="{{scrollIntoView}}">
+      <view class="card song-list-card">
+        <block wx:for="{{sections}}" wx:key="letter" wx:for-item="section">
+          <view id="{{section.sectionId}}" class="song-section">
+            <text class="song-section-letter">{{section.letter}}</text>
+            <view
+              wx:for="{{section.songs}}"
+              wx:for-item="song"
+              wx:key="id"
+              class="song-item"
+              data-id="{{song.id}}"
+              bindtap="goSong"
+            >
+              <view class="song-copy">
+                <text class="song-name">{{song.name}}</text>
+                <text class="song-album">{{song.albumName}}</text>
+              </view>
+              <text wx:if="{{song.hasMv}}" class="song-tag">MV</text>
+            </view>
+          </view>
+        </block>
       </view>
-      <text wx:if="{{item.hasMv}}" class="song-tag">MV</text>
+    </scroll-view>
+
+    <view wx:if="{{sections.length}}" class="letter-index">
+      <text
+        wx:for="{{letterIndexes}}"
+        wx:key="letter"
+        class="letter-index-item {{item.disabled ? 'letter-index-item-disabled' : ''}}"
+        data-section-id="{{item.sectionId}}"
+        bindtap="goLetter"
+      >
+        {{item.letter}}
+      </text>
     </view>
   </view>
 </view>

@@ -70,13 +70,21 @@ test('library page exposes the five primary destinations in product order', asyn
 test('song list page loads songs from remote interfaces and maps album names with mv flags', async () => {
   type SongListPageConfig = {
     data: {
-      songs: Array<{ id: string; albumName: string; hasMv: boolean }>;
+      songs: Array<{ id: string; name: string; albumName: string; hasMv: boolean }>;
+      sections: Array<{
+        letter: string;
+        sectionId: string;
+        songs: Array<{ id: string; name: string }>;
+      }>;
+      letterIndexes: Array<{ letter: string; sectionId: string; disabled: boolean }>;
+      scrollIntoView: string;
       isLoading: boolean;
       loadError: boolean;
     };
     setData: (patch: Partial<SongListPageConfig['data']>) => void;
     onLoad: (options: { scope?: string }) => void | Promise<void>;
     retryLoad: () => Promise<void>;
+    goLetter: (event: { currentTarget: { dataset: { sectionId?: string } } }) => void;
   };
 
   let pageConfig: SongListPageConfig | undefined;
@@ -102,6 +110,24 @@ test('song list page loads songs from remote interfaces and maps album names wit
             code: 0,
             data: [
               {
+                id: 'song_ready_for_it',
+                name: '...Ready For It?',
+                albumId: 'album_reputation',
+                lyrics: [],
+                mv: {
+                  title: '...Ready For It?',
+                  cover: 'https://cdn.example/ready-for-it.png',
+                  source: 'YouTube',
+                  duration: '3:55'
+                }
+              },
+              {
+                id: 'song_tim_mcgraw',
+                name: 'Tim McGraw',
+                albumId: 'album_taylor_swift',
+                lyrics: []
+              },
+              {
                 id: 'song_anti_hero',
                 name: 'Anti-Hero',
                 albumId: 'album_midnights',
@@ -112,12 +138,6 @@ test('song list page loads songs from remote interfaces and maps album names wit
                   source: 'YouTube',
                   duration: '5:10'
                 }
-              },
-              {
-                id: 'song_tim_mcgraw',
-                name: 'Tim McGraw',
-                albumId: 'album_taylor_swift',
-                lyrics: []
               },
               {
                 id: 'song_carolina',
@@ -139,6 +159,7 @@ test('song list page loads songs from remote interfaces and maps album names wit
             code: 0,
             data: [
               { id: 'album_midnights', name: 'Midnights', year: 2022, cover: 'https://cdn.example/midnights.png' },
+              { id: 'album_reputation', name: 'Reputation', year: 2017, cover: 'https://cdn.example/reputation.png' },
               { id: 'album_taylor_swift', name: 'Taylor Swift', year: 2006, cover: 'https://cdn.example/debut.png' }
             ]
           }
@@ -161,25 +182,56 @@ test('song list page loads songs from remote interfaces and maps album names wit
   assert.deepEqual(requestUrls.map((url) => url.replace(/^https?:\/\/[^/]+/, '')), ['/songs', '/albums']);
   assert.deepEqual(pageConfig.data.songs.map((item) => ({
     id: item.id,
+    name: item.name,
     albumName: item.albumName,
     hasMv: item.hasMv
   })), [
     {
       id: 'song_anti_hero',
+      name: 'Anti-Hero',
       albumName: 'Midnights',
       hasMv: true
     },
     {
-      id: 'song_tim_mcgraw',
+      id: 'song_carolina',
+      name: 'Carolina',
       albumName: 'Taylor Swift',
       hasMv: false
     },
     {
-      id: 'song_carolina',
+      id: 'song_ready_for_it',
+      name: '...Ready For It?',
+      albumName: 'Reputation',
+      hasMv: true
+    },
+    {
+      id: 'song_tim_mcgraw',
+      name: 'Tim McGraw',
       albumName: 'Taylor Swift',
       hasMv: false
     }
   ]);
+  assert.deepEqual(
+    pageConfig.data.sections.map((section) => ({
+      letter: section.letter,
+      sectionId: section.sectionId,
+      firstSongId: section.songs[0]?.id
+    })),
+    [
+      { letter: 'A', sectionId: 'song-section-a', firstSongId: 'song_anti_hero' },
+      { letter: 'C', sectionId: 'song-section-c', firstSongId: 'song_carolina' },
+      { letter: 'R', sectionId: 'song-section-r', firstSongId: 'song_ready_for_it' },
+      { letter: 'T', sectionId: 'song-section-t', firstSongId: 'song_tim_mcgraw' }
+    ]
+  );
+  assert.deepEqual(
+    pageConfig.data.letterIndexes.filter((item) => !item.disabled).map((item) => item.letter),
+    ['A', 'C', 'R', 'T']
+  );
+  pageConfig.goLetter.call(pageConfig, {
+    currentTarget: { dataset: { sectionId: pageConfig.data.sections[2]?.sectionId } }
+  });
+  assert.equal(pageConfig.data.scrollIntoView, pageConfig.data.sections[2]?.sectionId);
   assert.equal(pageConfig.data.isLoading, false);
   assert.equal(pageConfig.data.loadError, false);
 });
@@ -399,7 +451,7 @@ test('song list and favorites templates do not depend on local-only placeholder 
   const favoritesTemplate = readFileSync(new URL('../pages/favorites/index.wxml', import.meta.url), 'utf8');
   const albumTemplate = readFileSync(new URL('../pages/album/index.wxml', import.meta.url), 'utf8');
 
-  assert.match(songListTemplate, /wx:for="{{songs}}"/);
+  assert.match(songListTemplate, /wx:for="{{sections}}"/);
   assert.match(favoritesTemplate, /wx:for="{{favorites}}"/);
   assert.doesNotMatch(albumTemplate, /track\.displayName/);
   assert.match(albumTemplate, /track\.song\.name/);
