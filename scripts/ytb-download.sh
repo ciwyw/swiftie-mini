@@ -2,12 +2,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 DEFAULT_PLAYLIST_URL="https://youtube.com/playlist?list=PLfWKEhMbWILYtzOTznu2paIGnI5YjyE5X&si=PaOvzmyVO_0GmNHQ"
 PLAYLIST_URL="${1:-${PLAYLIST_URL:-${DEFAULT_PLAYLIST_URL}}}"
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-${HOME}/Downloads/live}"
-ARCHIVE_FILE="${ARCHIVE_FILE:-${PROJECT_ROOT}/ytb-archive.txt}"
+ARCHIVE_FILE="${ARCHIVE_FILE:-${SCRIPT_DIR}/ytb-archive.txt}"
 COOKIE_BROWSER="${COOKIE_BROWSER:-chrome}"
 OUTPUT_TEMPLATE="${DOWNLOAD_DIR}/%(playlist_index)02d_%(title).120B.%(ext)s"
 FORMAT_SELECTOR='bv*[height<=720]+ba/b[height<=720]'
@@ -56,4 +55,4 @@ yt-dlp \
   --ignore-errors \
   --continue
 
-echo "下载完成。再次执行本脚本时，会自动跳过 ytb-archive.txt 中已记录的视频。"
+echo "下载完成。再次执行本脚本时，会自动跳过 scripts/ytb-archive.txt 中已记录的视频。"
