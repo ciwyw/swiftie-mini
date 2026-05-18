@@ -11,7 +11,6 @@ import {
   fetchPerformanceDetail,
   fetchPerformances,
   fetchShowDetail,
-  fetchShowVideos,
   fetchSongs,
   fetchSingles,
   fetchSongDetail,
@@ -219,24 +218,16 @@ export function loadShowDetail(id: string) {
   return fromCache(`show:${id}`, () => fetchShowDetail(id));
 }
 
-export function loadShowVideos(id: string) {
-  return fromCache(`showVideos:${id}`, () => fetchShowVideos(id));
-}
-
 export async function loadShowDetailPage(id: string) {
   const show = await loadShowDetail(id);
   if (!show) {
     return null;
   }
 
-  const [tour, videos] = await Promise.all([
-    loadTourDetail(show.tourId),
-    loadShowVideos(id)
-  ]);
+  const tour = await loadTourDetail(show.tourId);
 
   return {
     show,
-    tour,
-    videos
+    tour
   };
 }

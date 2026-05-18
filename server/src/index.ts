@@ -146,16 +146,6 @@ interface ShowRecord {
   surprise_songs_json: string | null;
 }
 
-interface VideoRecord {
-  id: string;
-  show_id: string;
-  title: string;
-  cover: string;
-  song: string | null;
-  user_name: string;
-  uploaded_at: number;
-}
-
 enum HomeSpotlightType {
   AlbumPreview = 'album_preview',
   AlbumReleaseWeek = 'album_release_week',
@@ -562,18 +552,6 @@ function mapShow(record: ShowRecord) {
   };
 }
 
-function mapVideo(record: VideoRecord) {
-  return {
-    id: record.id,
-    showId: record.show_id,
-    title: record.title,
-    cover: record.cover,
-    song: record.song ?? undefined,
-    userName: record.user_name,
-    uploadedAt: record.uploaded_at
-  };
-}
-
 async function handleHome(db: D1DatabaseLike): Promise<Response> {
   const [albums, tours, eras, news] = await Promise.all([
     queryAll<AlbumRecord>(db, "SELECT id, name, year, cover, announcement_at, release_at, kind FROM albums WHERE kind = 'album' ORDER BY year ASC, id ASC"),
@@ -887,16 +865,6 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       'SELECT id, name, status, cover, description, announcement_at, start_at, end_at, total, cancelled, album_ids_json, setlists_json FROM tours ORDER BY start_at DESC, id ASC'
     );
     return success(rows.map(mapTour));
-  }
-
-  const showVideosMatch = pathname.match(/^\/shows\/([^/]+)\/videos$/);
-  if (showVideosMatch) {
-    const rows = await queryAll<VideoRecord>(
-      env.DB,
-      'SELECT id, show_id, title, cover, song, user_name, uploaded_at FROM videos WHERE show_id = ? ORDER BY uploaded_at DESC, id ASC',
-      showVideosMatch[1]
-    );
-    return success(rows.map(mapVideo));
   }
 
   const showMatch = pathname.match(/^\/shows\/([^/]+)$/);

@@ -117,22 +117,5 @@
       </view>
     </view>
 
-    <view class="card">
-      <view class="video-head">
-        <text class="section-title">饭拍视频</text>
-      </view>
-      <view wx:for="{{videos}}" wx:key="id" class="video-item">
-        <image class="video-cover" src="{{item.cover}}" mode="aspectFill"></image>
-        <view class="video-copy">
-          <text class="video-title">{{item.title}}</text>
-          <text class="video-song" wx:if="{{item.song}}">{{item.song}}</text>
-          <text class="video-meta">{{item.userName}} · {{item.uploadedAtText}}</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="upload-footer">
-      <button class="upload-footer-btn" bindtap="openUpload">上传视频</button>
-    </view>
   </view>
 </view>

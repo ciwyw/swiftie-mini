@@ -37,7 +37,6 @@ export const ROUTES = {
   showDetail: '/pages/show/detail/index',
   eraDetail: '/pages/era/detail/index',
   guide: '/pages/guide/index',
-  videoUpload: '/pages/video/upload/index',
   videoPlayer: '/pages/video/player/index',
   album: '/pages/album/index',
   song: '/pages/song/index',

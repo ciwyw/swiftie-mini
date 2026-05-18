@@ -1,5 +1,5 @@
 import { loadShowDetailPage } from '../../../services/contentStore';
-import { Show, ShowStatus, Video } from '../../../types/tour';
+import { Show, ShowStatus } from '../../../types/tour';
 import { ROUTES } from '../../../utils/constants';
 
 const SHOW_STATUS_TEXT: Record<ShowStatus, string> = {
@@ -19,13 +19,8 @@ interface ShowDetailView extends Show {
   saleAtText: string;
 }
 
-interface ShowVideoView extends Video {
-  uploadedAtText: string;
-}
-
 interface ShowDetailData {
   show: ShowDetailView | null;
-  videos: ShowVideoView[];
   tourName: string;
   currentShowId: string;
   hasError: boolean;
@@ -74,7 +69,6 @@ function buildSeatMapState(show: Pick<Show, 'seatMapImages'> | null, currentInde
 Page({
   data: {
     show: null,
-    videos: [],
     tourName: '',
     currentShowId: '',
     hasError: false,
@@ -109,7 +103,6 @@ Page({
       if (!detail) {
         this.setData({
           show: null,
-          videos: [],
           tourName: '',
           hasError: true,
           isLoading: false,
@@ -126,10 +119,6 @@ Page({
           dateText: formatDay(detail.show.startAt),
           saleAtText: detail.show.saleAt ? formatDateTime(detail.show.saleAt) : '待公布'
         },
-        videos: detail.videos.map((video) => ({
-          ...video,
-          uploadedAtText: formatDateTime(video.uploadedAt)
-        })),
         tourName: detail.tour?.name ?? '',
         hasError: false,
         isLoading: false,
@@ -139,7 +128,6 @@ Page({
     } catch {
       this.setData({
         show: null,
-        videos: [],
         tourName: '',
         hasError: false,
         isLoading: false,
@@ -167,14 +155,6 @@ Page({
     }
 
     wx.navigateTo({ url: `${ROUTES.song}?id=${songId}` });
-  },
-
-  openUpload() {
-    if (!this.data.show) {
-      return;
-    }
-
-    wx.navigateTo({ url: `${ROUTES.videoUpload}?showId=${this.data.show.id}` });
   },
 
   retryLoad() {

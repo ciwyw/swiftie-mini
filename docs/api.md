@@ -23,7 +23,6 @@
 - `pages/tour/detail/index?id=<tourId>`：巡演详情
 - `pages/show/detail/index?id=<showId>`：场次详情
 - `pages/guide/index?tourId=<tourId>`：抢票助手
-- `pages/video/upload/index?showId=<showId>`：上传视频
 - `pages/video/player/index?id=<performanceId>`：资料馆视频播放
 
 说明：
@@ -72,7 +71,6 @@
 - `GET /tours/:id`
 - `GET /tours/:id/shows`
 - `GET /shows/:id`
-- `GET /shows/:id/videos`
 
 补充约定：
 
@@ -98,7 +96,6 @@
 
 ## 当前本地交互边界
 
-- 视频上传：提交走本地 mock 流程，不产生真实上传记录
 - 抢票助手：仅操作本地存储，不同步到云端
 - 收藏和用户资料缓存继续保留本地存储
 

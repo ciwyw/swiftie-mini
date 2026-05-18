@@ -144,3 +144,20 @@ test('tour index template no longer renders timeline year labels', () => {
   assert.doesNotMatch(template, /timeline-year/);
   assert.doesNotMatch(template, /timelineLabel/);
 });
+
+test('show detail template no longer renders fan-cam video module', () => {
+  const template = readFileSync(new URL('../pages/show/detail/index.wxml', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(template, /饭拍视频/);
+  assert.doesNotMatch(template, /bindtap="openUpload"/);
+  assert.doesNotMatch(template, /wx:for="{{videos}}"/);
+});
+
+test('mini program config no longer registers upload video page', () => {
+  const appConfig = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8')) as {
+    pages: string[];
+  };
+
+  assert.ok(!appConfig.pages.includes('pages/video/upload/index'));
+  assert.equal('videoUpload' in ROUTES, false);
+});

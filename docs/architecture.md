@@ -50,7 +50,6 @@
 - `pages/tour/detail/index`
 - `pages/show/detail/index`
 - `pages/guide/index`
-- `pages/video/upload/index`
 
 ## 目录职责
 
@@ -84,9 +83,8 @@
 
 - [pages/tour/index.ts](/Users/bytedance/projects/swiftie-mini/pages/tour/index.ts)：巡演首页远程聚合
 - [pages/tour/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/tour/detail/index.ts)：巡演状态、进度条、场次列表
-- [pages/show/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/show/detail/index.ts)：场次详情、票务信息和视频列表
+- [pages/show/detail/index.ts](/Users/bytedance/projects/swiftie-mini/pages/show/detail/index.ts)：场次详情、票务信息和场馆信息
 - [pages/guide/index.ts](/Users/bytedance/projects/swiftie-mini/pages/guide/index.ts)：Checklist 交互
-- [pages/video/upload/index.ts](/Users/bytedance/projects/swiftie-mini/pages/video/upload/index.ts)：mock 上传流程
 
 ### 个人页
 

@@ -13,7 +13,6 @@
 - 巡演时间轴首页
 - 巡演详情与场次详情
 - 抢票助手 Checklist
-- 饭拍视频上传模拟
 - 个人页（头像与收藏）
 
 ## 运行方式
@@ -26,7 +25,6 @@
 - `pages/tour/detail`：进度条、官摄占位、场次列表
 - `pages/show/detail`：根据状态显示抢票模块或 Surprise Songs
 - `pages/guide/index`：本地持久化 Checklist
-- `pages/video/upload`：纯 mock 上传流程
 
 ## 本地验证
 1. 安装依赖：`npm install`

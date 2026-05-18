@@ -43,7 +43,6 @@
 - `GET /tours/:id`
 - `GET /tours/:id/shows`
 - `GET /shows/:id`
-- `GET /shows/:id/videos`
 
 ## 类型模型
 
@@ -52,7 +51,7 @@
 - [types/library.ts](/Users/bytedance/projects/swiftie-mini/types/library.ts)：资料馆领域类型
 - [types/news.ts](/Users/bytedance/projects/swiftie-mini/types/news.ts)：动态类型
 - [types/home.ts](/Users/bytedance/projects/swiftie-mini/types/home.ts)：首页聚合类型
-- [types/tour.ts](/Users/bytedance/projects/swiftie-mini/types/tour.ts)：巡演、场次、视频、Checklist 等类型
+- [types/tour.ts](/Users/bytedance/projects/swiftie-mini/types/tour.ts)：巡演、场次、Checklist 等类型
 - [types/era.ts](/Users/bytedance/projects/swiftie-mini/types/era.ts)：Era 展厅类型
 
 重点：

@@ -46,16 +46,6 @@ export interface Show {
   surpriseSongs?: SurpriseSong[];
 }
 
-export interface Video {
-  id: string;
-  showId: string;
-  title: string;
-  cover: string;
-  song?: string;
-  userName: string;
-  uploadedAt: number;
-}
-
 export interface SurpriseSong {
   songId?: string;
   name: string;

@@ -95,8 +95,7 @@ test('list endpoints return empty arrays when the database is empty', async () =
     '/performances',
     '/documentaries',
     '/tours',
-    `/tours/${TOUR_IDS.eras}/shows`,
-    '/shows/show_tokyo_n1/videos'
+    `/tours/${TOUR_IDS.eras}/shows`
   ];
 
   for (const path of listPaths) {
@@ -124,6 +123,16 @@ test('detail endpoints return null when the database is empty', async () => {
 
 test('unknown routes return a 404 payload', async () => {
   const { response, body } = await requestJson('/unknown');
+
+  assert.equal(response.status, 404);
+  assert.deepEqual(body, {
+    code: -1,
+    data: null
+  });
+});
+
+test('show video endpoint is no longer exposed', async () => {
+  const { response, body } = await requestJson('/shows/show_tokyo_n1/videos');
 
   assert.equal(response.status, 404);
   assert.deepEqual(body, {

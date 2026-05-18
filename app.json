@@ -13,7 +13,6 @@
     "pages/tour/detail/index",
     "pages/show/detail/index",
     "pages/guide/index",
-    "pages/video/upload/index",
     "pages/video/player/index",
     "pages/profile/index"
   ],

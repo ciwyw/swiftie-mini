@@ -3,7 +3,7 @@ import { EraExhibit } from '../types/era';
 import { HomeFeed } from '../types/home';
 import { Documentary, Performance } from '../types/library';
 import { Song } from '../types/song';
-import { Show, Tour, Video } from '../types/tour';
+import { Show, Tour } from '../types/tour';
 import { request } from './request';
 
 export function fetchHomeFeed() {
@@ -72,8 +72,4 @@ export function fetchTourShows(id: string) {
 
 export function fetchShowDetail(id: string) {
   return request<Show | null>(`/shows/${id}`);
-}
-
-export function fetchShowVideos(id: string) {
-  return request<Video[]>(`/shows/${id}/videos`);
 }
