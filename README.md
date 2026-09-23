@@ -1,5 +1,3 @@
-# Taylor Swift 粉丝微信小程序 MVP
-
 ## 技术栈
 - 微信小程序原生
 - TypeScript + WXML + WXSS
